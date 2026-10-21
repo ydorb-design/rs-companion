@@ -1,0 +1,18 @@
+{
+  "name": "osrs-companion",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Self-hosted Old School RuneScape companion: stats, goals, quests, prices and tasks.",
+  "type": "module",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning src/server.js",
+    "test": "node --disable-warning=ExperimentalWarning --test \"test/*.test.js\""
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}

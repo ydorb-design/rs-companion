@@ -1,0 +1,14 @@
+services:
+  osrs-companion:
+    build: .
+    container_name: osrs-companion
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/data
+    environment:
+      TZ: Australia/Hobart
+      # Optional. Pre-fills Settings on first run. You can change both in the app later.
+      # PLAYER: "Your name"
+      # ACCOUNT_TYPE: ironman   # main, ironman, hardcore, ultimate or group
