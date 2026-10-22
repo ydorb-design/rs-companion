@@ -124,6 +124,7 @@ p { margin: 0; }
   background: var(--surface-2); color: var(--text);
   font: inherit; font-size: var(--text-sm); font-weight: 600; cursor: pointer;
 }
+.btn { text-decoration: none; }
 .btn:hover { border-color: var(--text-muted); }
 .btn:disabled { opacity: .55; cursor: progress; }
 .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
@@ -147,14 +148,16 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--f
 .field .hint::before { content: "· "; }
 
 .segmented { display: inline-flex; padding: 3px; gap: 2px; border-radius: var(--radius-sm); background: var(--surface-2); border: 1px solid var(--border); }
+.segmented { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
 .segmented button {
+  white-space: nowrap; flex: none;
   font: inherit; font-size: var(--text-xs); font-weight: 600; border: 0; cursor: pointer;
   padding: 4px var(--space-3); border-radius: 4px; background: transparent; color: var(--text-muted);
 }
 .segmented button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgb(0 0 0 / .25); }
 
 /* Progress */
-.bar { height: 6px; border-radius: 999px; background: var(--track); overflow: hidden; }
+.bar { display: block; height: 6px; border-radius: 999px; background: var(--track); overflow: hidden; }
 .bar > span { display: block; height: 100%; background: var(--accent); border-radius: inherit; }
 .bar.done > span { background: var(--success); }
 
@@ -165,7 +168,8 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--f
   padding: var(--space-3); border-radius: var(--radius); background: var(--surface-2);
   border: 1px solid transparent; text-align: left; font: inherit; color: inherit; cursor: pointer;
 }
-.skill:hover, .skill[aria-pressed="true"] { border-color: var(--accent); }
+.skill { text-decoration: none; }
+.skill:hover { border-color: var(--accent); }
 .skill img { width: 22px; height: 22px; object-fit: contain; image-rendering: pixelated; }
 .skill-name { font-size: var(--text-sm); color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .skill-level { font-weight: 700; font-variant-numeric: tabular-nums; }
@@ -197,13 +201,15 @@ td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; white-space:
 .goal-head { display: flex; align-items: center; gap: var(--space-3); }
 .goal-head img { width: 24px; height: 24px; object-fit: contain; }
 .goal-head .grow { flex: 1; min-width: 0; }
+.goal-head h3 a { color: inherit; text-decoration: none; }
+.goal-head h3 a:hover { color: var(--accent); }
 .goal-stats { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); font-size: var(--text-sm); }
 .goal-stats b { font-weight: 600; font-variant-numeric: tabular-nums; }
 .goals { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: var(--space-3); }
 
 /* Quests */
 .quest-list { display: flex; flex-direction: column; }
-.quest { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: 1px solid var(--border); }
+.quest { display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: 1px solid var(--border); }
 .quest:last-child { border-bottom: 0; }
 .quest-name { flex: 1; min-width: 0; }
 .quest-name a { color: inherit; text-decoration: none; }
@@ -236,6 +242,63 @@ td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; white-space:
 .task-actions { display: flex; gap: var(--space-1); justify-content: flex-end; }
 .column.done .task-title { color: var(--text-muted); text-decoration: line-through; }
 
+/* Shared additions */
+code { font-size: .9em; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+.kpi-sub { font-size: var(--text-md); font-weight: 500; }
+.notice { padding: var(--space-3) var(--space-4); border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface-2); font-size: var(--text-sm); }
+.pos a, .item { color: inherit; text-decoration: none; }
+a.item:hover { color: var(--accent); }
+tr.clickable { cursor: pointer; }
+tr.clickable:hover td, tr.selected td { background: var(--surface-2); }
+tr.selected td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+.warn { color: var(--warning); }
+
+/* Skill page */
+.skill-hero { width: 48px; height: 48px; border-radius: var(--radius); background: var(--surface-2); display: grid; place-items: center; }
+.skill-hero img { width: 30px; height: 30px; object-fit: contain; image-rendering: pixelated; }
+.page-head a { text-decoration: none; }
+.progress-row { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-3); margin: var(--space-2) 0 0; }
+.facts div { background: var(--surface-2); border-radius: var(--radius); padding: var(--space-3); }
+.facts dt { font-size: var(--text-xs); color: var(--text-muted); }
+.facts dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* Quests */
+.filter-bar { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-bottom: var(--space-3); }
+.filter-bar input { flex: 1 1 180px; width: auto; }
+.quest .dot-state { margin-top: 7px; }
+.quest select { flex: none; }
+.req { font-size: var(--text-xs); color: var(--text-muted); margin-top: 2px; }
+.req a { color: var(--text); text-decoration: underline; text-decoration-color: var(--border); }
+
+/* Timers */
+.presets { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--space-2); }
+.presets .btn { flex-direction: column; align-items: flex-start; gap: 0; min-height: 56px; padding: var(--space-2) var(--space-3); }
+.timers { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: var(--space-3); }
+.timer { background: var(--surface-2); border-radius: var(--radius); padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); border: 1px solid transparent; }
+.timer.done { border-color: var(--success); }
+.timer-main { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); }
+.timer-label { font-weight: 600; }
+.timer-left { font-size: var(--text-lg); font-weight: 600; }
+.timer.done .timer-left { color: var(--success); }
+.timer-actions { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+
+/* Settings */
+.settings { max-width: 720px; }
+.accounts { display: flex; flex-direction: column; gap: var(--space-2); }
+.account { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); flex-wrap: wrap; padding: var(--space-3); border-radius: var(--radius); background: var(--surface-2); border: 1px solid transparent; }
+.account.active { border-color: var(--accent); }
+.checks { border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.checks legend { font-size: var(--text-sm); color: var(--text-muted); font-weight: 500; margin-bottom: var(--space-2); }
+.checks label { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-md); }
+.checks input { width: 18px; height: 18px; min-height: 0; accent-color: var(--accent); }
+
+/* Login */
+body.locked .sidebar { display: none; }
+body.locked .shell { grid-template-columns: minmax(0, 1fr); }
+.login { min-height: 80vh; display: grid; place-items: center; }
+.login form { width: min(380px, 100%); display: flex; flex-direction: column; gap: var(--space-4); }
+
 /* Toast */
 .toast {
   position: fixed; left: 50%; bottom: var(--space-5); transform: translate(-50%, 20px);
@@ -259,6 +322,10 @@ td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; white-space:
   .nav { flex-direction: row; overflow-x: auto; scrollbar-width: none; margin: 0 calc(var(--space-4) * -1); padding: 0 var(--space-4); }
   .nav a { white-space: nowrap; }
   .player-card { display: none; }
+  .sidebar { position: sticky; }
+  .player-card:has(select) { display: block; position: absolute; top: 8px; right: var(--space-4); padding: 0; border: 0; }
+  .player-card:has(select) .field { font-size: 0; }
+  .player-card:has(select) select { min-height: 32px; font-size: var(--text-sm); max-width: 150px; }
   .main { padding: var(--space-5) var(--space-4); }
   .card { padding: var(--space-4); }
   .table-wrap { margin: 0 calc(var(--space-4) * -1); padding: 0 var(--space-4); }

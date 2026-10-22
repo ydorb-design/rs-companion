@@ -3,8 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>OSRS Companion</title>
+  <title>RS Companion</title>
   <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#15130f">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="RS Companion">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23c9a227'/><path d='M9 23 16 8l7 15' stroke='%231a1712' stroke-width='3.5' fill='none' stroke-linejoin='round'/></svg>">
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -13,14 +19,16 @@
     <aside class="sidebar">
       <div class="brand">
         <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="var(--accent)"/><path d="M9 23 16 8l7 15" stroke="var(--accent-text)" stroke-width="3.5" fill="none" stroke-linejoin="round"/></svg>
-        <span class="brand-name">OSRS Companion</span>
+        <span class="brand-name">RS Companion</span>
       </div>
       <nav class="nav" aria-label="Main">
         <a href="#/overview" data-route="overview">Overview</a>
+        <a href="#/bossing" data-route="bossing">Bossing</a>
         <a href="#/goals" data-route="goals">Goals</a>
         <a href="#/quests" data-route="quests">Quests &amp; diaries</a>
-        <a href="#/prices" data-route="prices">Prices</a>
+        <a href="#/timers" data-route="timers">Timers</a>
         <a href="#/tasks" data-route="tasks">Tasks</a>
+        <a href="#/prices" data-route="prices">Prices</a>
         <a href="#/settings" data-route="settings">Settings</a>
       </nav>
       <div class="player-card" id="player-card"></div>

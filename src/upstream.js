@@ -60,7 +60,12 @@ export function parseWikiSync(json) {
       diaries[region][tier] = typeof value === 'object' && value !== null ? Boolean(value.complete) : Boolean(value);
     }
   }
-  return { quests, diaries, syncedAt: json.timestamp || null };
+  // Format isn't documented: count completed task IDs from an array, or truthy values from an object.
+  const ca = json.combat_achievements;
+  const combatAchievements = Array.isArray(ca) ? ca.length
+    : ca && typeof ca === 'object' ? Object.values(ca).filter(Boolean).length
+      : null;
+  return { quests, diaries, combatAchievements, syncedAt: json.timestamp || null };
 }
 
 export function createUpstream({ fetch = globalThis.fetch, now = () => Date.now() } = {}) {
@@ -110,6 +115,28 @@ export function createUpstream({ fetch = globalThis.fetch, now = () => Date.now(
       return cached('mapping', 24 * 60 * 60 * 1000, () =>
         getJson('https://prices.runescape.wiki/api/v1/osrs/mapping'),
       );
+    },
+
+    // Page source for up to 50 wiki pages per request, keyed by the title asked for.
+    async wikiPages(titles) {
+      const out = {};
+      for (let i = 0; i < titles.length; i += 50) {
+        const batch = titles.slice(i, i + 50);
+        const params = new URLSearchParams({
+          action: 'query', prop: 'revisions', rvprop: 'content', rvslots: 'main',
+          format: 'json', formatversion: '2', redirects: '1', titles: batch.join('|'),
+        });
+        const json = await getJson(`https://oldschool.runescape.wiki/api.php?${params}`);
+        const q = json.query || {};
+        // Follow title normalisation and redirects back to the requested title.
+        const alias = new Map(batch.map((t) => [t, t]));
+        for (const { from, to } of [...(q.normalized || []), ...(q.redirects || [])]) {
+          for (const [orig, cur] of alias) if (cur === from) alias.set(orig, to);
+        }
+        const byTitle = new Map((q.pages || []).map((p) => [p.title, p.revisions?.[0]?.slots?.main?.content ?? null]));
+        for (const [orig, cur] of alias) out[orig] = byTitle.get(cur) ?? null;
+      }
+      return out;
     },
 
     // Latest GE prices for every item.

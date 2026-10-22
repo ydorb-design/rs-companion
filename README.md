@@ -1,12 +1,16 @@
-# OSRS Companion
+# RS Companion
 
 A self-hosted Old School RuneScape companion you run in Docker and open in a browser.
 
-- **Overview**: levels and XP from the official hiscores, XP chart per skill, gains by day, week and month
+- **Overview and skill pages**: levels, XP and rank from the official hiscores, XP history, gains, average XP per day and time to the next level or 99 at your current pace
+- **Bossing**: kill counts, clue scrolls, collection log and minigames, with gains and history
 - **Goals**: target a level or XP amount, see XP remaining, and actions or hours left if you add your rates
-- **Quests and diaries**: quest and achievement diary progress synced from WikiSync, with manual overrides
+- **Quests and diaries**: progress synced from WikiSync, quest requirements from the OSRS Wiki checked against your stats, combat achievements
+- **Timers**: herb, birdhouse, tree and daily reset timers, with alerts when they finish
+- **Tasks**: a To do / Doing / Done board, with ironman unlock and gear checklists to start from
 - **Prices**: live Grand Exchange prices, high alch values, alch profit and a watchlist
-- **Tasks**: a simple To do / Doing / Done board for your own objectives
+- **Alerts**: Discord or ntfy messages when a timer finishes, you level up, or you complete a goal
+- **Multiple accounts**, optional **password login**, and it can be **installed to your phone's home screen**
 
 It only reads public data (hiscores, OSRS Wiki). It never touches the game client, so it doesn't break Jagex's rules.
 
@@ -33,17 +37,37 @@ Then **Add another Path, Port, Variable, Label or Device** for each of these:
 | Port | WebUI | `8417` | `8417` |
 | Path | Data | `/data` | `/mnt/user/appdata/rs-companion` |
 
-Click **Apply**. Open the WebUI, go to **Settings**, enter your player name and account type, and save. It pulls your stats straight away.
+Click **Apply**. Open the WebUI, go to **Settings**, and add your player name and account type under Accounts. It pulls your stats straight away.
 
 **Updates**: Unraid shows "update ready" on the Docker tab when a new image is published, same as your other containers.
 
 **Backups**: all data is in `/mnt/user/appdata/rs-companion`, so the Appdata Backup plugin covers it.
 
+### Password login
+
+The app has no login unless you turn it on. In the Docker tab, edit the container and **Add another Path, Port, Variable, Label or Device**:
+
+| Config Type | Name | Key | Value |
+| --- | --- | --- | --- |
+| Variable | Password | `APP_PASSWORD` | your password |
+
+Apply, and the app will ask for it. You stay signed in for 90 days per device. Changing the password signs everyone out.
+
+### Alerts
+
+In the app, go to **Settings > Refresh and alerts** and paste a Discord webhook URL (Discord: Server Settings > Integrations > Webhooks > New Webhook > Copy Webhook URL) and/or an ntfy topic URL. Press **Send test alert** to check it works.
+
+Level-up and goal alerts are sent when the app next refreshes your stats, so they can arrive up to the refresh interval after it happens.
+
+### Phone
+
+Open the app's address in your phone browser and use **Add to Home Screen** (Safari: Share menu; Chrome: menu). It opens full screen like an app. This needs the HTTPS address through Nginx Proxy Manager, not the local IP.
+
 ### Nginx Proxy Manager and Cloudflare
 
 Add a Proxy Host pointing to your Unraid IP, port `8417`, scheme `http`.
 
-The app has no login. If it's reachable from the internet, anyone with the address can see and change your data. Put it behind one of these:
+Once it's reachable from the internet, anyone with the address can see and change your data unless it's protected. Turn on password login (above), and/or put it behind one of these:
 
 - **Cloudflare Access** (Zero Trust > Access > Applications): only lets in your email address. Best option if the domain is proxied through Cloudflare.
 - **NPM Access List**: Access Lists > Add, set a username and password, then pick it on the Proxy Host.
@@ -68,8 +92,16 @@ Quest and diary progress comes from the OSRS Wiki's **WikiSync** RuneLite plugin
 
 After that it syncs automatically on the refresh interval. Anything you change by hand is kept as an override (dashed outline on diaries, "Manual" tag on quests) until you clear it.
 
+## Quest requirements
+
+When you sync, the app reads each quest's requirements from its OSRS Wiki page and checks them against your levels and quest progress. Results are cached for 30 days; **Reload requirements** fetches them again.
+
+- Skill, combat level and quest requirements are checked. Quest point requirements are shown but not checked.
+- If a quest page can't be read, it shows "Requirements not found on the wiki" rather than guessing.
+
 ## How tracking works
 
+- Boss kill counts only show once you're ranked for that boss on the hiscores.
 - The hiscores only show current totals, so history builds up from snapshots the app takes. The default is every 6 hours (change it in Settings). The first day's chart will be empty.
 - Your skills need to be ranked on the hiscores to show exact XP. Unranked skills show the minimum XP for their level.
 - Group ironmen are read from the main hiscores, as there isn't an individual group ironman board.

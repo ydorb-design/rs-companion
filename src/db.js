@@ -49,6 +49,21 @@ CREATE TABLE IF NOT EXISTS diary_overrides (
   complete INTEGER NOT NULL,
   PRIMARY KEY (player, region, tier)
 );
+CREATE TABLE IF NOT EXISTS timers (
+  id INTEGER PRIMARY KEY,
+  player TEXT NOT NULL,
+  label TEXT NOT NULL,
+  preset TEXT,
+  duration_ms INTEGER NOT NULL,
+  started_at INTEGER NOT NULL,
+  ends_at INTEGER NOT NULL,
+  notified INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS quest_requirements (
+  name TEXT PRIMARY KEY,
+  data TEXT NOT NULL,
+  fetched_at INTEGER NOT NULL
+);
 CREATE TABLE IF NOT EXISTS watchlist (
   item_id INTEGER PRIMARY KEY,
   added_at INTEGER NOT NULL

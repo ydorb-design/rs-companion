@@ -9,34 +9,34 @@ const DATA_DIR = process.env.DATA_DIR || './data';
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
 const db = openDb(path.join(DATA_DIR, 'companion.db'));
-const app = createApp({ db, upstream: createUpstream() });
+const app = createApp({ db, upstream: createUpstream(), password: process.env.APP_PASSWORD || '' });
+const { ctx } = app;
 
-// First run: seed settings from environment variables if provided.
-const env = {};
-if (process.env.PLAYER && !app.getSettings().player) env.player = process.env.PLAYER;
-if (process.env.ACCOUNT_TYPE) env.accountType = process.env.ACCOUNT_TYPE;
-for (const [k, v] of Object.entries(env)) {
-  db.prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO NOTHING').run(k, JSON.stringify(v));
+// First run: seed an account from environment variables if provided.
+if (process.env.PLAYER && !ctx.allAccounts().length) {
+  ctx.saveSettings({
+    accounts: [{ player: process.env.PLAYER.trim(), accountType: process.env.ACCOUNT_TYPE || 'ironman' }],
+    active: process.env.PLAYER.trim(),
+  });
 }
 
-// Background refresh of hiscores and WikiSync on the configured interval.
+// Refresh hiscores and WikiSync for every account on the configured interval.
 let timer;
 function schedule() {
   clearTimeout(timer);
-  const { player, refreshHours } = app.getSettings();
-  if (!player || !refreshHours) return;
+  const { refreshHours } = ctx.getSettings();
+  if (!refreshHours) return;
   timer = setTimeout(async () => {
-    for (const job of [app.refreshStats, app.syncProgress]) {
-      try {
-        await job();
-      } catch (err) {
-        console.warn(`Scheduled refresh: ${err.message}`);
-      }
-    }
+    await app.jobs.refreshAll();
     schedule();
   }, refreshHours * 60 * 60 * 1000);
 }
-app.on('settings', schedule);
+app.setSettingsListener(schedule);
 schedule();
 
-app.listen(PORT, () => console.log(`OSRS Companion running on port ${PORT}`));
+// Check for finished farming and custom timers.
+setInterval(() => app.jobs.checkTimers(), 30 * 1000);
+
+app.listen(PORT, () => {
+  console.log(`RS Companion running on port ${PORT}${process.env.APP_PASSWORD ? ' (password login on)' : ''}`);
+});
