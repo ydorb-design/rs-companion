@@ -72,6 +72,8 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; }
+/* No double-tap zoom. */
+html { touch-action: manipulation; -webkit-text-size-adjust: 100%; }
 body {
   background: var(--bg);
   color: var(--text);
@@ -418,6 +420,8 @@ textarea { font-size: var(--text-sm); line-height: 1.5; }
   .nav { flex-direction: row; overflow-x: auto; scrollbar-width: none; margin: 0 calc(var(--space-4) * -1); padding: 0 var(--space-4); }
   .nav a { white-space: nowrap; }
   .nav-group { display: none; }
+  /* iPhones zoom in on focus when text is under 16px. */
+  input, select, textarea { font-size: 16px; }
   .music-list { columns: 1; }
   .event { grid-template-columns: 1fr auto; }
   .event-type { grid-column: 1 / -1; }

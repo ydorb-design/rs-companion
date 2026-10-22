@@ -102,4 +102,8 @@ window.addEventListener('hashchange', () => {
 });
 route();
 
+// Block pinch zoom. iOS Safari ignores user-scalable=no in the viewport tag, so stop the gestures directly.
+document.addEventListener('gesturestart', (e) => e.preventDefault());
+document.addEventListener('touchmove', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
