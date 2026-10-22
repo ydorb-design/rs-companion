@@ -4,7 +4,7 @@ import { openDb } from './db.js';
 import { createUpstream } from './upstream.js';
 import { createApp } from './app.js';
 
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = Number(process.env.PORT) || 8417;
 const DATA_DIR = process.env.DATA_DIR || './data';
 
 fs.mkdirSync(DATA_DIR, { recursive: true });

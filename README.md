@@ -12,7 +12,43 @@ It only reads public data (hiscores, OSRS Wiki). It never touches the game clien
 
 ## Run it
 
-You need Docker with Compose. On a NAS that's usually Container Manager (Synology), Portainer, or the Docker app on Unraid.
+Every push to `main` builds a Docker image and publishes it to `ghcr.io/ydorb-design/rs-companion:latest`. The image is private, so the server needs a GitHub token to pull it.
+
+### Unraid (Docker tab)
+
+**Docker > Add Container**, switch to **Advanced View**, then fill in:
+
+| Field | Value |
+| --- | --- |
+| Name | `rs-companion` |
+| Repository | `ghcr.io/ydorb-design/rs-companion:latest` |
+| Network Type | `Bridge` |
+| WebUI | `http://[IP]:[PORT:8417]/` |
+| Icon URL | `https://oldschool.runescape.wiki/images/Stats_icon.png` |
+
+Then **Add another Path, Port, Variable, Label or Device** for each of these:
+
+| Config Type | Name | Container | Host / Value |
+| --- | --- | --- | --- |
+| Port | WebUI | `8417` | `8417` |
+| Path | Data | `/data` | `/mnt/user/appdata/rs-companion` |
+
+Click **Apply**. Open the WebUI, go to **Settings**, enter your player name and account type, and save. It pulls your stats straight away.
+
+**Updates**: Unraid shows "update ready" on the Docker tab when a new image is published, same as your other containers.
+
+**Backups**: all data is in `/mnt/user/appdata/rs-companion`, so the Appdata Backup plugin covers it.
+
+### Nginx Proxy Manager and Cloudflare
+
+Add a Proxy Host pointing to your Unraid IP, port `8417`, scheme `http`.
+
+The app has no login. If it's reachable from the internet, anyone with the address can see and change your data. Put it behind one of these:
+
+- **Cloudflare Access** (Zero Trust > Access > Applications): only lets in your email address. Best option if the domain is proxied through Cloudflare.
+- **NPM Access List**: Access Lists > Add, set a username and password, then pick it on the Proxy Host.
+
+### Docker Compose (other servers)
 
 ```sh
 git clone https://github.com/ydorb-design/rs-companion.git
@@ -20,18 +56,7 @@ cd rs-companion
 docker compose up -d --build
 ```
 
-Open `http://<server-ip>:3000`, go to **Settings**, enter your player name and account type, and save. It pulls your stats straight away.
-
-Your data is stored in the `data` folder next to `docker-compose.yml`. Back that folder up to keep your history.
-
-**Update** to a newer version:
-
-```sh
-git pull
-docker compose up -d --build
-```
-
-**Change the port**: edit `"3000:3000"` in `docker-compose.yml` to e.g. `"8080:3000"`.
+Open `http://<server-ip>:8417`. Data is stored in the `data` folder next to `docker-compose.yml`.
 
 ## Quest and diary sync
 
@@ -55,7 +80,7 @@ Needs Node 22.13 or later.
 
 ```sh
 npm install
-npm start      # http://localhost:3000
+npm start      # http://localhost:8417
 npm test
 ```
 

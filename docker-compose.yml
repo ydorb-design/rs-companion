@@ -4,7 +4,7 @@ services:
     container_name: osrs-companion
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "8417:8417"
     volumes:
       - ./data:/data
     environment:
