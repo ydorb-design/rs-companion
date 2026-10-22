@@ -28,7 +28,7 @@ function hiscoresFixture(xpBoost = 0, kills = 0) {
 const WIKISYNC = {
   username: 'Iron Brody',
   timestamp: '2026-10-20T10:00:00Z',
-  quests: { "Cook's Assistant": 2, 'Dragon Slayer I': 1, 'Monkey Madness I': 0, 'The Grand Tree': 2, 'Tree Gnome Village': 0 },
+  quests: { '.': 0, "Cook's Assistant": 2, 'Dragon Slayer I': 1, 'Monkey Madness I': 0, 'The Grand Tree': 2, 'Tree Gnome Village': 0 },
   achievement_diaries: { Ardougne: { Easy: { complete: true, tasks: [true] }, Medium: { complete: false, tasks: [false] } } },
   combat_achievements: [1, 4, 9],
 };
@@ -105,6 +105,7 @@ test('parsers handle unranked entries and wikisync shapes', () => {
   assert.equal(h.skills.find((s) => s.name === 'Sailing').xp, 0);
   assert.deepEqual(h.activities.map((a) => a.name), ['Clue Scrolls (all)', 'Zulrah', 'Collections Logged']);
   const w = parseWikiSync(WIKISYNC);
+  assert.equal(w.quests.some((q) => q.name === '.'), false);
   assert.equal(w.quests.find((q) => q.name === 'Dragon Slayer I').state, 'in_progress');
   assert.equal(w.diaries.Ardougne.Easy, true);
   assert.equal(w.combatAchievements, 3);

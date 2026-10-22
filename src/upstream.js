@@ -49,7 +49,8 @@ const QUEST_STATES = ['not_started', 'in_progress', 'complete'];
 
 export function parseWikiSync(json) {
   if (!json || typeof json !== 'object') throw new UpstreamError('Unexpected WikiSync response');
-  const quests = Object.entries(json.quests || {}).map(([name, v]) => ({
+  // WikiSync's list includes placeholder keys like "." that aren't quests.
+  const quests = Object.entries(json.quests || {}).filter(([name]) => /[a-z]/i.test(name)).map(([name, v]) => ({
     name,
     state: QUEST_STATES[v] ?? 'not_started',
   }));

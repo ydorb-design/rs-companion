@@ -60,7 +60,8 @@ export function progressRoutes(ctx) {
     const reqs = Object.fromEntries(db.prepare('SELECT name, data FROM quest_requirements').all().map((row) => [row.name, JSON.parse(row.data)]));
 
     const questStates = {};
-    const quests = s.quests.map((q) => {
+    // Also filters data synced before placeholder keys were dropped.
+    const quests = s.quests.filter((q) => /[a-z]/i.test(q.name)).map((q) => {
       const state = questOverrides[q.name] ?? q.state;
       questStates[q.name] = state;
       return { name: q.name, state, synced: q.state, manual: q.name in questOverrides };
