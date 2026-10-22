@@ -64,6 +64,58 @@ CREATE TABLE IF NOT EXISTS quest_requirements (
   data TEXT NOT NULL,
   fetched_at INTEGER NOT NULL
 );
+CREATE TABLE IF NOT EXISTS events (
+  id INTEGER PRIMARY KEY,
+  player TEXT NOT NULL,
+  at INTEGER NOT NULL,
+  type TEXT NOT NULL,
+  title TEXT NOT NULL,
+  detail TEXT NOT NULL DEFAULT '',
+  ref TEXT
+);
+CREATE INDEX IF NOT EXISTS events_player_time ON events (player, at);
+CREATE TABLE IF NOT EXISTS slayer_tasks (
+  id INTEGER PRIMARY KEY,
+  player TEXT NOT NULL,
+  monster TEXT NOT NULL,
+  amount INTEGER NOT NULL,
+  kills INTEGER NOT NULL DEFAULT 0,
+  master TEXT NOT NULL DEFAULT '',
+  assigned_at INTEGER NOT NULL,
+  ended_at INTEGER,
+  outcome TEXT NOT NULL DEFAULT 'active',
+  points INTEGER
+);
+CREATE TABLE IF NOT EXISTS drops (
+  id INTEGER PRIMARY KEY,
+  player TEXT NOT NULL,
+  item_id INTEGER,
+  item_name TEXT NOT NULL,
+  icon TEXT,
+  qty INTEGER NOT NULL,
+  source TEXT NOT NULL DEFAULT '',
+  value_each INTEGER,
+  note TEXT NOT NULL DEFAULT '',
+  at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS clog_items (
+  id INTEGER PRIMARY KEY,
+  player TEXT NOT NULL,
+  item_id INTEGER,
+  item_name TEXT NOT NULL,
+  icon TEXT,
+  source TEXT NOT NULL DEFAULT '',
+  obtained_at INTEGER,
+  created_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS checklist (
+  id INTEGER PRIMARY KEY,
+  player TEXT NOT NULL,
+  label TEXT NOT NULL,
+  freq TEXT NOT NULL,
+  last_done_at INTEGER,
+  created_at INTEGER NOT NULL
+);
 CREATE TABLE IF NOT EXISTS watchlist (
   item_id INTEGER PRIMARY KEY,
   added_at INTEGER NOT NULL

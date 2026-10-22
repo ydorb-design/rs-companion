@@ -139,3 +139,99 @@ export function viewInterval(fn, ms) {
     fn();
   }, ms);
 }
+
+// Item search box with a dropdown of matching items. Falls back to the typed name if nothing is picked.
+export function itemPickerMarkup(placeholder = 'Search items') {
+  return `<div class="picker">
+    <input type="search" class="picker-input" placeholder="${esc(placeholder)}" autocomplete="off" required
+      role="combobox" aria-expanded="false" aria-autocomplete="list" aria-label="Item">
+    <ul class="picker-list" role="listbox" hidden></ul>
+    <input type="hidden" name="itemId"><input type="hidden" name="itemName"><input type="hidden" name="icon">
+  </div>`;
+}
+
+export function bindItemPicker(root) {
+  const input = root.querySelector('.picker-input');
+  const list = root.querySelector('.picker-list');
+  const hidden = (n) => root.querySelector(`[name="${n}"]`);
+  let results = [], active = -1, timer;
+
+  const close = () => { list.hidden = true; input.setAttribute('aria-expanded', 'false'); active = -1; };
+  const pick = (item) => {
+    hidden('itemId').value = item.id;
+    hidden('itemName').value = item.name;
+    hidden('icon').value = item.icon || '';
+    input.value = item.name;
+    root.classList.add('picked');
+    close();
+  };
+  const render = () => {
+    list.innerHTML = results.map((r, i) => `<li role="option" id="opt-${r.id}" aria-selected="${i === active}" data-i="${i}">
+      ${img(itemIcon(r.icon))}<span>${esc(r.name)}</span><span class="muted small">${r.price != null ? `${short(r.price)} gp` : ''}</span></li>`).join('');
+    list.hidden = !results.length;
+    input.setAttribute('aria-expanded', String(!list.hidden));
+  };
+
+  input.addEventListener('input', () => {
+    hidden('itemId').value = '';
+    hidden('itemName').value = input.value.trim();
+    hidden('icon').value = '';
+    root.classList.remove('picked');
+    clearTimeout(timer);
+    const q = input.value.trim();
+    if (q.length < 2) { results = []; return render(); }
+    timer = setTimeout(async () => {
+      try {
+        results = (await api(`/prices/search?q=${encodeURIComponent(q)}`)).slice(0, 8);
+      } catch {
+        results = [];
+      }
+      if (input.value.trim() === q) { active = -1; render(); }
+    }, 200);
+  });
+  input.addEventListener('keydown', (e) => {
+    if (list.hidden) return;
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      active = (active + (e.key === 'ArrowDown' ? 1 : -1) + results.length) % results.length;
+      render();
+    } else if (e.key === 'Enter' && active >= 0) {
+      e.preventDefault();
+      pick(results[active]);
+    } else if (e.key === 'Escape') close();
+  });
+  list.addEventListener('mousedown', (e) => {
+    const li = e.target.closest('li');
+    if (li) { e.preventDefault(); pick(results[Number(li.dataset.i)]); }
+  });
+  input.addEventListener('blur', () => setTimeout(close, 100));
+
+  return {
+    reset() {
+      input.value = '';
+      ['itemId', 'itemName', 'icon'].forEach((n) => (hidden(n).value = ''));
+      root.classList.remove('picked');
+      results = [];
+      render();
+    },
+  };
+}
+
+export const EVENT_TYPES = {
+  level: 'Level',
+  kc: 'Kill count',
+  quest: 'Quest',
+  diary: 'Diary',
+  drop: 'Drop',
+  slayer: 'Slayer',
+  clog: 'Collection log',
+  collection: 'Collection log',
+};
+
+export function eventRow(e) {
+  return `<li class="event">
+    <span class="event-type t-${esc(e.type)}">${esc(EVENT_TYPES[e.type] || e.type)}</span>
+    <span class="event-body"><span>${esc(e.title)}</span>${e.detail ? `<span class="muted small">${esc(e.detail)}</span>` : ''}</span>
+    <time class="muted small" datetime="${new Date(e.at).toISOString()}">${ago(e.at)}</time>
+  </li>`;
+}

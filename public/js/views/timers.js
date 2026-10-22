@@ -4,7 +4,7 @@ import {
 
 export async function renderTimers() {
   if (!state.settings.active) return (view.innerHTML = needsAccount());
-  const data = await api('/timers');
+  const [data, checklist] = await Promise.all([api('/timers'), api('/checklist')]);
   // Count down from the server's clock so a wrong device clock doesn't skew timers.
   const offset = data.now - Date.now();
   const nowMs = () => Date.now() + offset;
@@ -13,11 +13,29 @@ export async function renderTimers() {
   view.innerHTML = `<div>
     <div class="page-head">
       <div>
-        <h1>Timers</h1>
-        <p class="muted small">Farming and other run timers for ${esc(state.settings.active.player)}. Growth times are approximate.</p>
+        <h1>Timers &amp; dailies</h1>
+        <p class="muted small">Run timers and recurring jobs for ${esc(state.settings.active.player)}. Growth times are approximate.</p>
       </div>
     </div>
     <div class="stack">
+      <section class="card">
+        <div class="card-head"><h2>Daily and weekly</h2><span class="muted small">Dailies reset at 00:00 UTC, weeklies on Wednesday at 00:00 UTC</span></div>
+        ${['daily', 'weekly'].map((freq) => {
+          const items = checklist.filter((c) => c.freq === freq);
+          if (!items.length) return '';
+          return `<h3 class="sub-head">${freq === 'daily' ? 'Daily' : 'Weekly'} <span class="muted small">${items.filter((i) => i.done).length} / ${items.length} done · resets in ${duration(items[0].resetsAt - nowMs())}</span></h3>
+            <ul class="checklist">${items.map((c) => `<li class="${c.done ? 'done' : ''}">
+              <label><input type="checkbox" data-check="${c.id}" ${c.done ? 'checked' : ''}><span>${esc(c.label)}</span></label>
+              <button class="btn btn-ghost btn-sm icon-btn" data-uncheck-del="${c.id}" aria-label="Remove ${esc(c.label)}">✕</button>
+            </li>`).join('')}</ul>`;
+        }).join('') || '<p class="muted small" style="margin-bottom:12px">Add things you do every day or week, like buying battlestaves or topping up Miscellania.</p>'}
+        <form id="checklist-form" class="form-grid" style="margin-top:12px;grid-template-columns:2fr 1fr auto">
+          <label class="field">New item<input name="label" maxlength="80" required placeholder="e.g. Kingdom of Miscellania"></label>
+          <label class="field">Repeats<select name="freq"><option value="daily">Daily</option><option value="weekly">Weekly</option></select></label>
+          <button class="btn" type="submit">Add</button>
+        </form>
+      </section>
+
       ${alertsOn ? '' : '<p class="notice">Add a Discord webhook or ntfy URL in <a href="#/settings">Settings</a> to get an alert when a timer finishes.</p>'}
       <section class="card">
         <div class="card-head"><h2>Start a timer</h2></div>
@@ -65,6 +83,16 @@ export async function renderTimers() {
   tick();
   viewInterval(tick, 15000);
 
+  view.querySelectorAll('[data-check]').forEach((box) => box.addEventListener('change', async () => {
+    if (await busy(box, () => api(`/checklist/${box.dataset.check}`, { method: 'PUT', body: { done: box.checked } }))) renderTimers();
+  }));
+  view.querySelectorAll('[data-uncheck-del]').forEach((b) => b.addEventListener('click', async () => {
+    if (await busy(b, () => api(`/checklist/${b.dataset.uncheckDel}`, { method: 'DELETE' }))) renderTimers();
+  }));
+  document.getElementById('checklist-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (await busy(e.submitter, () => api('/checklist', { method: 'POST', body: Object.fromEntries(new FormData(e.target)) }))) renderTimers();
+  });
   view.querySelectorAll('[data-preset]').forEach((b) => b.addEventListener('click', async () => {
     if (await busy(b, () => api('/timers', { method: 'POST', body: { preset: b.dataset.preset } }), 'Timer started')) renderTimers();
   }));

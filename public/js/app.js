@@ -8,6 +8,10 @@ import { renderTimers } from './views/timers.js';
 import { renderPrices } from './views/prices.js';
 import { renderTasks } from './views/tasks.js';
 import { renderSettings } from './views/settings.js';
+import { renderActivity } from './views/activity.js';
+import { renderSlayer } from './views/slayer.js';
+import { renderDrops } from './views/drops.js';
+import { renderCollection } from './views/collection.js';
 
 async function loadSettings() {
   state.settings = await api('/settings');
@@ -59,6 +63,10 @@ const ROUTES = {
   overview: renderOverview,
   skill: renderSkill,
   bossing: renderBossing,
+  activity: renderActivity,
+  slayer: renderSlayer,
+  drops: renderDrops,
+  collection: renderCollection,
   goals: renderGoals,
   quests: renderQuests,
   timers: renderTimers,

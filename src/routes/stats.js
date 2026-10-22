@@ -1,18 +1,11 @@
 import { Router } from 'express';
 import { DAY } from '../context.js';
+import { eventsFromSnapshots } from '../events.js';
+import { activityGroup } from '../activities.js';
 
 const PERIODS = { day: DAY, week: 7 * DAY, month: 30 * DAY };
 
-// Hiscore activities that aren't bosses.
-const NON_BOSS = new Set([
-  'League Points', 'Deadman Points', 'LMS - Rank', 'PvP Arena - Rank', 'Soul Wars Zeal', 'Rifts closed',
-  'Colosseum Glory', 'Collections Logged',
-]);
-export function activityGroup(name) {
-  if (name.startsWith('Clue Scrolls')) return 'clues';
-  if (NON_BOSS.has(name) || name.startsWith('Bounty Hunter')) return 'other';
-  return 'bosses';
-}
+export { activityGroup };
 
 export function combatLevel(skills) {
   const lvl = (n) => skills.find((s) => s.name === n)?.level ?? 1;
@@ -30,11 +23,13 @@ export function statsRoutes(ctx, { onRefreshed } = {}) {
   // Pulls hiscores for one account and stores a snapshot. Returns level-ups since the last one.
   async function refreshStats(account = ctx.requireAccount()) {
     const data = await ctx.upstream.hiscores(account.player, account.accountType);
+    ctx.ensureBackfill(account.key);
     const last = ctx.latestSnapshot(account.key);
     const changed = !last || JSON.stringify([last.skills, last.activities]) !== JSON.stringify([data.skills, data.activities]);
     // Store a row when anything changed, or daily so charts have a baseline.
     if (changed || now() - last.takenAt > DAY) {
       db.prepare('INSERT INTO snapshots (player, taken_at, data) VALUES (?, ?, ?)').run(account.key, now(), JSON.stringify(data));
+      for (const e of eventsFromSnapshots(last, data)) ctx.events.add(account.key, now(), e);
     }
     const levelUps = [];
     if (last) {

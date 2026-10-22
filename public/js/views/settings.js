@@ -54,6 +54,12 @@ export async function renderSettings({ reload }) {
       </form>
 
       <section class="card">
+        <div class="card-head"><h2>Backup</h2></div>
+        <p class="small">Download everything (history, goals, tasks, drops, Slayer and more) as a JSON file. Your Discord and ntfy addresses aren't included.</p>
+        <div class="form-actions"><a class="btn" href="/api/export" download>Download backup</a></div>
+      </section>
+
+      <section class="card">
         <div class="card-head"><h2>Login</h2></div>
         ${auth.required
           ? '<p class="small">Password login is on. To change the password, edit the <code>APP_PASSWORD</code> variable on the container.</p><div class="form-actions"><button class="btn" id="logout">Sign out</button></div>'

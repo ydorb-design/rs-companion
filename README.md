@@ -10,7 +10,12 @@ A self-hosted Old School RuneScape companion you run in Docker and open in a bro
 - **Tasks**: a To do / Doing / Done board, with ironman unlock and gear checklists to start from
 - **Prices**: live Grand Exchange prices, high alch values, alch profit and a watchlist
 - **Alerts**: Discord or ntfy messages when a timer finishes, you level up, or you complete a goal
-- **Multiple accounts**, optional **password login**, and it can be **installed to your phone's home screen**
+- **Activity feed**: level-ups, kill count milestones, quests, diaries, drops and Slayer tasks in one timeline
+- **What's next** on the Overview: ready timers, unfinished dailies, your Slayer task, quests you can start and your closest goals
+- **Slayer**: current task with a kill counter, points and task history
+- **Drops and collection log**: log drops with their GE value; keep a list of collection log items you're chasing, ticked off automatically when you log the drop
+- **Daily and weekly checklist**: your own recurring jobs, reset at the game's daily (00:00 UTC) and weekly (Wednesday 00:00 UTC) reset
+- **Multiple accounts**, optional **password login**, **backup download**, and it can be **installed to your phone's home screen**
 
 It only reads public data (hiscores, OSRS Wiki). It never touches the game client, so it doesn't break Jagex's rules.
 
@@ -99,9 +104,14 @@ When you sync, the app reads each quest's requirements from its OSRS Wiki page a
 - Skill, combat level and quest requirements are checked. Quest point requirements are shown but not checked.
 - If a quest page can't be read, it shows "Requirements not found on the wiki" rather than guessing.
 
+## Collection log
+
+The game's full collection log isn't on the hiscores, only the number of slots logged, which the app shows. The list on the Collection log page is one you build yourself.
+
 ## How tracking works
 
 - Boss kill counts only show once you're ranked for that boss on the hiscores.
+- The activity feed dates hiscores events (levels, kill counts) by when the app noticed them, so they can be up to the refresh interval late.
 - The hiscores only show current totals, so history builds up from snapshots the app takes. The default is every 6 hours (change it in Settings). The first day's chart will be empty.
 - Your skills need to be ranked on the hiscores to show exact XP. Unranked skills show the minimum XP for their level.
 - Group ironmen are read from the main hiscores, as there isn't an individual group ironman board.

@@ -1,5 +1,6 @@
 // Shared helpers passed to every route module.
 import { ACCOUNT_TYPES } from './upstream.js';
+import { createEvents } from './events.js';
 
 export const DAY = 24 * 60 * 60 * 1000;
 
@@ -72,5 +73,17 @@ export function createContext({ db, upstream, now = () => Date.now(), notify }) 
     return row ? { takenAt: row.taken_at, ...JSON.parse(row.data) } : null;
   }
 
-  return { db, upstream, now, notify, getSettings, saveSettings, activeAccount, requireAccount, allAccounts, latestSnapshot };
+  const events = createEvents(db);
+  // Builds the feed from older snapshots the first time an account is used with it.
+  function ensureBackfill(key) {
+    const flag = `eventsBackfilled:${key}`;
+    if (getSettings()[flag]) return;
+    events.backfill(key);
+    saveSettings({ [flag]: true });
+  }
+
+  return {
+    db, upstream, now, notify, events, ensureBackfill,
+    getSettings, saveSettings, activeAccount, requireAccount, allAccounts, latestSnapshot,
+  };
 }

@@ -13,6 +13,11 @@ import { progressRoutes } from './routes/progress.js';
 import { pricesRoutes } from './routes/prices.js';
 import { tasksRoutes } from './routes/tasks.js';
 import { timersRoutes } from './routes/timers.js';
+import { activityRoutes } from './routes/activity.js';
+import { slayerRoutes } from './routes/slayer.js';
+import { dropsRoutes } from './routes/drops.js';
+import { checklistRoutes } from './routes/checklist.js';
+import { exportRoutes } from './routes/export.js';
 
 const PUBLIC_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 
@@ -64,6 +69,11 @@ export function createApp({ db, upstream, now = () => Date.now(), password = '',
   app.use('/api', pricesRoutes(ctx));
   app.use('/api', tasksRoutes(ctx));
   app.use('/api', timers.router);
+  app.use('/api', activityRoutes(ctx));
+  app.use('/api', slayerRoutes(ctx));
+  app.use('/api', dropsRoutes(ctx));
+  app.use('/api', checklistRoutes(ctx));
+  app.use('/api', exportRoutes(ctx));
 
   app.use('/api', (req, res) => res.status(404).json({ error: 'Not found.' }));
   app.use(express.static(PUBLIC_DIR));

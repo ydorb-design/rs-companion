@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { BadRequest, DAY } from '../context.js';
 import { checkRequirements, parseRequirements } from '../requirements.js';
 import { combatLevel } from './stats.js';
+import { eventsFromSync } from '../events.js';
 
 export const DIARY_REGIONS = [
   'Ardougne', 'Desert', 'Falador', 'Fremennik', 'Kandarin', 'Karamja', 'Kourend & Kebos',
@@ -23,6 +24,7 @@ export function progressRoutes(ctx) {
 
   async function syncProgress(account = ctx.requireAccount()) {
     const data = await ctx.upstream.wikiSync(account.player);
+    for (const e of eventsFromSync(synced(account.key), data)) ctx.events.add(account.key, now(), e);
     db.prepare('INSERT INTO wikisync (player, fetched_at, data) VALUES (?, ?, ?) ON CONFLICT(player) DO UPDATE SET fetched_at = excluded.fetched_at, data = excluded.data')
       .run(account.key, now(), JSON.stringify(data));
     return data;
