@@ -173,3 +173,62 @@ test('export leaves out secrets', async () => {
   assert.equal(typeof res.body.tables.snapshots[0].data, 'object');
   assert.ok(res.body.tables.drops.length >= 1);
 });
+
+test('supply stockpile', async () => {
+  assert.equal((await call('/supplies', 'POST', { qty: 5 })).status, 400);
+  assert.equal((await call('/supplies', 'POST', { itemId: 4151, qty: 340, target: 500, lowAt: 100 })).status, 201);
+  assert.equal((await call('/supplies', 'POST', { itemId: 4151 })).status, 400, 'no duplicates');
+  await call('/supplies', 'POST', { itemName: 'Prayer potion(4)', qty: 20, lowAt: 50 });
+  let s = (await call('/supplies')).body;
+  const whip = s.items.find((i) => i.itemName === 'Abyssal whip');
+  assert.equal(whip.value, 340 * 1_500_000);
+  assert.equal(s.items.find((i) => i.itemName === 'Prayer potion(4)').low, true);
+  await call(`/supplies/${whip.id}`, 'PUT', { add: -300 });
+  s = (await call('/supplies')).body;
+  assert.deepEqual([s.items.find((i) => i.id === whip.id).qty, s.items.find((i) => i.id === whip.id).low], [40, true]);
+  await call(`/supplies/${whip.id}`, 'PUT', { add: -1000 });
+  assert.equal((await call('/supplies')).body.items.find((i) => i.id === whip.id).qty, 0, 'never below zero');
+  await call(`/supplies/${whip.id}`, 'PUT', { qty: 600, lowAt: '' });
+  assert.equal((await call('/supplies')).body.items.find((i) => i.id === whip.id).low, false);
+});
+
+test('boss notes', async () => {
+  let list = (await call('/bosses')).body;
+  assert.ok(list.some((b) => b.name === 'Zulrah' && b.kc === 50));
+  await call('/bosses/Vorkath', 'PUT', { gear: 'Dragon hunter crossbow', inventory: 'Antifire', notes: 'Walk the acid' });
+  list = (await call('/bosses')).body;
+  assert.equal(list[0].name, 'Vorkath', 'bosses with notes first');
+  const z = (await call('/bosses/Zulrah')).body;
+  assert.equal(z.kc, 50);
+  assert.equal(z.notes, null);
+  assert.ok(z.collectionLog.some((c) => c.itemName === 'Tanzanite fang'));
+  assert.ok(z.drops.some((d) => d.itemName === 'Tanzanite fang'));
+  assert.equal((await call('/bosses/Vorkath')).body.notes.gear, 'Dragon hunter crossbow');
+  await call('/bosses/Vorkath', 'DELETE');
+  assert.equal((await call('/bosses/Vorkath')).body.notes, null);
+});
+
+test('restore from backup', async () => {
+  assert.equal((await call('/import', 'POST', { hello: 'world' })).status, 400);
+  await call('/settings', 'PUT', { discordWebhook: 'https://discord.test/hook' });
+  const backup = (await call('/export')).body;
+  const goalsBefore = backup.tables.goals.length;
+  const snapshotsBefore = backup.tables.snapshots.length;
+
+  // Change things, then restore.
+  await call('/goals', 'POST', { skill: 'Attack', targetLevel: 70 });
+  await call('/tasks', 'POST', { title: 'Will be removed' });
+  await call('/settings', 'PUT', { refreshHours: 12 });
+  const res = await call('/import', 'POST', backup);
+  assert.equal(res.status, 200);
+  assert.equal(res.body.restored.snapshots, snapshotsBefore);
+
+  assert.equal((await call('/goals')).body.length, goalsBefore);
+  assert.equal((await call('/tasks')).body.some((t) => t.title === 'Will be removed'), false);
+  const settings = (await call('/settings')).body;
+  assert.equal(settings.refreshHours, backup.settings.refreshHours);
+  assert.equal(settings.discordWebhook, 'https://discord.test/hook', 'credentials kept');
+  assert.equal(settings.active.player, 'Iron Brody');
+  const stats = (await call('/stats')).body;
+  assert.ok(stats.latest.skills.length > 0, 'snapshot JSON restored');
+});

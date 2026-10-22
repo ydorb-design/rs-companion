@@ -1,12 +1,13 @@
 import {
-  ago, api, busy, esc, needsAccount, segmented, state, view, wikiUrl,
+  WIKI, ago, api, busy, esc, needsAccount, segmented, state, view, wikiUrl,
 } from '../lib.js';
 
-const ui = { filter: 'all', q: '' };
+const ui = { filter: 'all', q: '', music: '' };
 const STATE_LABELS = { not_started: 'Not started', in_progress: 'In progress', complete: 'Complete' };
 const CA_TIERS = ['None', 'Easy', 'Medium', 'Hard', 'Elite', 'Master', 'Grandmaster'];
 const FILTERS = [['all', 'All'], ['ready', 'Can start'], ['in_progress', 'In progress'], ['not_started', 'Not started'], ['complete', 'Complete']];
 
+const musicUrl = (name) => `${WIKI}/?search=${encodeURIComponent(`${name} music track`)}`;
 const canStart = (q) => q.state !== 'complete' && q.check.status === 'ready';
 
 function matches(q) {
@@ -110,6 +111,19 @@ export async function renderQuests() {
               <select id="ca-tier">${CA_TIERS.map((t) => `<option ${t === p.combatAchievements.tier ? 'selected' : ''}>${t}</option>`).join('')}</select>
             </label>
           </section>
+
+          <section class="card">
+            <div class="card-head"><h2>Music</h2>${p.music ? `<span class="count">${p.music.unlocked} / ${p.music.total}</span>` : ''}</div>
+            ${p.music ? `
+              <div class="bar ${p.music.unlocked === p.music.total ? 'done' : ''}" style="margin-bottom:12px"><span style="width:${((p.music.unlocked / Math.max(p.music.total, 1)) * 100).toFixed(1)}%"></span></div>
+              ${p.music.locked.length ? `
+                <input id="music-search" type="search" placeholder="Search ${p.music.locked.length} locked tracks" value="${esc(ui.music)}" aria-label="Search locked tracks">
+                <ul class="music-list">${p.music.locked.filter((m) => m.toLowerCase().includes(ui.music.toLowerCase())).map((m) => `
+                  <li><a href="${musicUrl(m)}" target="_blank" rel="noopener">${esc(m)}</a></li>`).join('') || '<li class="muted small">No locked tracks match.</li>'}</ul>
+                <p class="hint" style="margin-top:8px">Links search the wiki for where each track unlocks.</p>`
+                : '<p class="pos small">Every track unlocked.</p>'}`
+              : '<p class="muted small">Sync from WikiSync to load your music tracks.</p>'}
+          </section>
         </div>
       </div>
     </div></div>`;
@@ -154,6 +168,14 @@ export async function renderQuests() {
     const body = { region: b.dataset.region, tier: b.dataset.tier, complete: !tier.complete, clear: tier.manual };
     if (await busy(b, () => api('/progress/diary', { method: 'PUT', body }))) renderQuests();
   }));
+  const musicSearch = document.getElementById('music-search');
+  musicSearch?.addEventListener('input', () => {
+    ui.music = musicSearch.value;
+    const list = view.querySelector('.music-list');
+    const q = ui.music.toLowerCase();
+    list.innerHTML = p.music.locked.filter((m) => m.toLowerCase().includes(q))
+      .map((m) => `<li><a href="${musicUrl(m)}" target="_blank" rel="noopener">${esc(m)}</a></li>`).join('') || '<li class="muted small">No locked tracks match.</li>';
+  });
   const caSel = document.getElementById('ca-tier');
   caSel.addEventListener('change', () => busy(caSel, () => api('/progress/combat-achievements', { method: 'PUT', body: { tier: caSel.value } }), 'Saved'));
 }

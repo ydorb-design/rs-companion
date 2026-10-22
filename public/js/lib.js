@@ -38,6 +38,8 @@ export function duration(ms) {
   const h = Math.floor(m / 60);
   if (h < 48) return m % 60 ? `${h} h ${m % 60} min` : `${h} h`;
   const d = Math.floor(h / 24);
+  if (d >= 365) return `${(d / 365).toFixed(1)} years`;
+  if (d >= 60) return `${Math.round(d / 30.4)} months`;
   return h % 24 ? `${d} d ${h % 24} h` : `${d} d`;
 }
 export const capitalise = (s) => s[0].toUpperCase() + s.slice(1);
@@ -234,4 +236,21 @@ export function eventRow(e) {
     <span class="event-body"><span>${esc(e.title)}</span>${e.detail ? `<span class="muted small">${esc(e.detail)}</span>` : ''}</span>
     <time class="muted small" datetime="${new Date(e.at).toISOString()}">${ago(e.at)}</time>
   </li>`;
+}
+
+// Theme is per device: 'system', 'light' or 'dark'.
+export function getTheme() {
+  try {
+    return localStorage.getItem('theme') || 'system';
+  } catch {
+    return 'system';
+  }
+}
+export function setTheme(theme) {
+  if (theme === 'system') delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = theme;
+  try {
+    if (theme === 'system') localStorage.removeItem('theme');
+    else localStorage.setItem('theme', theme);
+  } catch { /* storage unavailable: the choice lasts until reload */ }
 }

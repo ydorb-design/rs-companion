@@ -91,6 +91,11 @@ export function progressRoutes(ctx) {
       quests,
       diaries,
       combatAchievements: { completed: s.combatAchievements ?? null, tier: caTier },
+      music: s.musicTracks ? {
+        unlocked: s.musicTracks.filter((m) => m.unlocked).length,
+        total: s.musicTracks.length,
+        locked: s.musicTracks.filter((m) => !m.unlocked).map((m) => m.name).sort((a, b) => a.localeCompare(b)),
+      } : null,
       requirementsLoaded: quests.some((q) => q.check.status !== 'not_loaded'),
       hasStats: Boolean(latest),
     });

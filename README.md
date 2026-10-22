@@ -4,8 +4,8 @@ A self-hosted Old School RuneScape companion you run in Docker and open in a bro
 
 - **Overview and skill pages**: levels, XP and rank from the official hiscores, XP history, gains, average XP per day and time to the next level or 99 at your current pace
 - **Bossing**: kill counts, clue scrolls, collection log and minigames, with gains and history
-- **Goals**: target a level or XP amount, see XP remaining, and actions or hours left if you add your rates
-- **Quests and diaries**: progress synced from WikiSync, quest requirements from the OSRS Wiki checked against your stats, combat achievements
+- **Goals**: target a level or XP amount, see XP remaining, and actions or hours left if you add your rates; max cape progress with a rough time to max
+- **Quests and diaries**: progress synced from WikiSync, quest requirements from the OSRS Wiki checked against your stats, combat achievements and music track unlocks
 - **Timers**: herb, birdhouse, tree and daily reset timers, with alerts when they finish
 - **Tasks**: a To do / Doing / Done board, with ironman unlock and gear checklists to start from
 - **Prices**: live Grand Exchange prices, high alch values, alch profit and a watchlist
@@ -13,9 +13,11 @@ A self-hosted Old School RuneScape companion you run in Docker and open in a bro
 - **Activity feed**: level-ups, kill count milestones, quests, diaries, drops and Slayer tasks in one timeline
 - **What's next** on the Overview: ready timers, unfinished dailies, your Slayer task, quests you can start and your closest goals
 - **Slayer**: current task with a kill counter, points and task history
+- **Boss notes**: gear, inventory and strategy per boss, next to your kill count, drops and collection log list for it
+- **Supplies**: stockpile counts with targets and low-stock warnings
 - **Drops and collection log**: log drops with their GE value; keep a list of collection log items you're chasing, ticked off automatically when you log the drop
 - **Daily and weekly checklist**: your own recurring jobs, reset at the game's daily (00:00 UTC) and weekly (Wednesday 00:00 UTC) reset
-- **Multiple accounts**, optional **password login**, **backup download**, and it can be **installed to your phone's home screen**
+- **Multiple accounts**, optional **password login**, **backup and restore**, **light and dark themes**, and it can be **installed to your phone's home screen**
 
 It only reads public data (hiscores, OSRS Wiki). It never touches the game client, so it doesn't break Jagex's rules.
 

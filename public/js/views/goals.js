@@ -1,11 +1,11 @@
 import { levelForXp, xpForLevel } from '../xp.js';
 import {
-  SKILL_NAMES, ago, api, busy, emptyState, esc, fmt, img, needsAccount, short, skillIcon, state, view,
+  SKILL_NAMES, ago, api, busy, duration, emptyState, esc, fmt, img, needsAccount, short, skillIcon, state, view,
 } from '../lib.js';
 
 export async function renderGoals() {
   if (!state.settings.active) return (view.innerHTML = needsAccount());
-  const [goals, stats] = await Promise.all([api('/goals'), api('/stats')]);
+  const [goals, stats, rates] = await Promise.all([api('/goals'), api('/stats'), api('/stats/rates').catch(() => ({}))]);
   const known = stats.latest?.skills.filter((s) => s.name !== 'Overall').map((s) => s.name);
   const skillOptions = (known?.length ? known : SKILL_NAMES).slice().sort();
 
@@ -14,6 +14,7 @@ export async function renderGoals() {
       <div><h1>Goals</h1><p class="muted small">Progress uses your latest hiscores snapshot${stats.latest ? ` (${ago(stats.latest.takenAt)})` : ''}.</p></div>
     </div>
     <div class="stack">
+      ${stats.latest ? maxCapeCard(stats.latest.skills, rates) : ''}
       <form class="card" id="goal-form">
         <div class="card-head"><h2>New goal</h2></div>
         <div class="form-grid">
@@ -79,4 +80,29 @@ function goalCard(g) {
           ${hours ? `<span>About <b>${hours}</b></span>` : ''}`}
       </div>
     </article>`;
+}
+
+// Progress towards level 99 in every skill.
+function maxCapeCard(allSkills, rates) {
+  const XP_99 = xpForLevel(99);
+  const skills = allSkills.filter((s) => s.name !== 'Overall');
+  const left = skills.map((s) => ({ name: s.name, level: s.level, left: Math.max(0, XP_99 - s.xp) }));
+  const remaining = left.reduce((n, s) => n + s.left, 0);
+  const done = skills.filter((s) => s.level >= 99).length;
+  const pct = (skills.reduce((n, s) => n + Math.min(s.xp, XP_99), 0) / (skills.length * XP_99)) * 100;
+  // Rough: all remaining XP divided by your combined daily XP in skills that aren't 99 yet.
+  const perDay = rates.month || rates.week;
+  const pace = perDay ? left.filter((s) => s.left > 0).reduce((n, s) => n + Math.max(0, perDay[s.name] || 0), 0) : 0;
+  const furthest = left.filter((s) => s.left > 0).sort((a, b) => b.left - a.left).slice(0, 5);
+  return `<section class="card">
+    <div class="card-head"><h2>Max cape</h2><span class="count">${done} / ${skills.length} at 99</span></div>
+    ${remaining === 0 ? '<p class="pos">Every skill is 99. Maxed.</p>' : `
+      <div class="progress-row"><span><b>${pct.toFixed(1)}%</b> of the way</span><span class="muted small">${fmt(remaining)} XP left</span></div>
+      <div class="bar" style="margin:6px 0 16px;height:8px"><span style="width:${pct.toFixed(2)}%"></span></div>
+      <dl class="facts">
+        <div><dt>At your current pace</dt><dd>${pace > 0 ? duration((remaining / pace) * 86400000) : '–'}</dd></div>
+        ${furthest.map((s) => `<div><dt><a class="plain" href="#/skill/${encodeURIComponent(s.name)}">${esc(s.name)} ${s.level}</a></dt><dd>${short(s.left)} XP</dd></div>`).join('')}
+      </dl>
+      <p class="hint" style="margin-top:12px">${pace > 0 ? 'A rough guide: assumes you keep gaining XP in each skill at your recent daily average.' : 'A time estimate shows once the app has a few days of snapshots.'}</p>`}
+  </section>`;
 }

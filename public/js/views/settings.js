@@ -1,4 +1,6 @@
-import { api, busy, esc, state, toast, view } from '../lib.js';
+import {
+  api, busy, esc, getTheme, segmented, setTheme, state, toast, view,
+} from '../lib.js';
 
 export async function renderSettings({ reload }) {
   const s = state.settings;
@@ -54,9 +56,22 @@ export async function renderSettings({ reload }) {
       </form>
 
       <section class="card">
+        <div class="card-head"><h2>Appearance</h2></div>
+        <div class="row" style="justify-content:space-between">
+          <span class="small">Theme <span class="hint">Saved on this device</span></span>
+          ${segmented('theme', [['system', 'System'], ['light', 'Light'], ['dark', 'Dark']], getTheme(), 'Theme')}
+        </div>
+      </section>
+
+      <section class="card">
         <div class="card-head"><h2>Backup</h2></div>
         <p class="small">Download everything (history, goals, tasks, drops, Slayer and more) as a JSON file. Your Discord and ntfy addresses aren't included.</p>
-        <div class="form-actions"><a class="btn" href="/api/export" download>Download backup</a></div>
+        <div class="form-actions" style="justify-content:flex-start;flex-wrap:wrap">
+          <a class="btn" href="/api/export" download>Download backup</a>
+          <button class="btn" type="button" id="restore-btn">Restore from backup…</button>
+          <input type="file" id="restore-file" accept="application/json,.json" hidden>
+        </div>
+        <p class="hint" style="margin-top:8px">Restoring replaces all current data with what's in the backup. Your Discord and ntfy addresses stay as they are.</p>
       </section>
 
       <section class="card">
@@ -119,6 +134,31 @@ export async function renderSettings({ reload }) {
     await reload();
     await api('/notifications/test', { method: 'POST' });
   }, 'Test alert sent'));
+  view.querySelectorAll('[data-theme]').forEach((b) => b.addEventListener('click', () => {
+    setTheme(b.dataset.theme);
+    view.querySelectorAll('[data-theme]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  }));
+
+  const restore = document.getElementById('restore-file');
+  document.getElementById('restore-btn').addEventListener('click', () => restore.click());
+  restore.addEventListener('change', async () => {
+    const file = restore.files[0];
+    restore.value = '';
+    if (!file) return;
+    let backup;
+    try {
+      backup = JSON.parse(await file.text());
+    } catch {
+      return toast("That file isn't valid JSON.", { error: true });
+    }
+    const when = backup.exportedAt ? new Date(backup.exportedAt).toLocaleString('en-AU') : 'an unknown date';
+    if (!confirm(`Replace all current data with the backup from ${when}? This can't be undone, so download a backup of what you have now first if you might want it.`)) return;
+    if (await busy(null, () => api('/import', { method: 'POST', body: backup }), 'Backup restored')) {
+      await reload();
+      location.hash = '#/overview';
+    }
+  });
+
   document.getElementById('logout')?.addEventListener('click', async () => {
     await api('/auth/logout', { method: 'POST' });
     location.reload();

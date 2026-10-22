@@ -116,6 +116,26 @@ CREATE TABLE IF NOT EXISTS checklist (
   last_done_at INTEGER,
   created_at INTEGER NOT NULL
 );
+CREATE TABLE IF NOT EXISTS supplies (
+  id INTEGER PRIMARY KEY,
+  player TEXT NOT NULL,
+  item_id INTEGER,
+  item_name TEXT NOT NULL,
+  icon TEXT,
+  qty INTEGER NOT NULL DEFAULT 0,
+  target INTEGER,
+  low_at INTEGER,
+  updated_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS boss_notes (
+  player TEXT NOT NULL,
+  boss TEXT NOT NULL,
+  gear TEXT NOT NULL DEFAULT '',
+  inventory TEXT NOT NULL DEFAULT '',
+  notes TEXT NOT NULL DEFAULT '',
+  updated_at INTEGER NOT NULL,
+  PRIMARY KEY (player, boss)
+);
 CREATE TABLE IF NOT EXISTS watchlist (
   item_id INTEGER PRIMARY KEY,
   added_at INTEGER NOT NULL

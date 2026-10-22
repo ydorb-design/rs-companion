@@ -12,6 +12,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="RS Companion">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23c9a227'/><path d='M9 23 16 8l7 15' stroke='%231a1712' stroke-width='3.5' fill='none' stroke-linejoin='round'/></svg>">
+  <script>
+    // Apply the saved theme before the page draws, to avoid a flash of the wrong one.
+    try { const t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch {}
+  </script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -29,6 +33,7 @@
         <a href="#/quests" data-route="quests">Quests &amp; diaries</a>
         <span class="nav-group">Combat</span>
         <a href="#/bossing" data-route="bossing">Bossing</a>
+        <a href="#/bosses" data-route="bosses">Boss notes</a>
         <a href="#/slayer" data-route="slayer">Slayer</a>
         <span class="nav-group">Loot</span>
         <a href="#/drops" data-route="drops">Drops</a>
@@ -36,6 +41,7 @@
         <a href="#/prices" data-route="prices">Prices</a>
         <span class="nav-group">Planning</span>
         <a href="#/timers" data-route="timers">Timers &amp; dailies</a>
+        <a href="#/supplies" data-route="supplies">Supplies</a>
         <a href="#/tasks" data-route="tasks">Tasks</a>
         <span class="nav-group"></span>
         <a href="#/settings" data-route="settings">Settings</a>

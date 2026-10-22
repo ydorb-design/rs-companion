@@ -66,7 +66,10 @@ export function parseWikiSync(json) {
   const combatAchievements = Array.isArray(ca) ? ca.length
     : ca && typeof ca === 'object' ? Object.values(ca).filter(Boolean).length
       : null;
-  return { quests, diaries, combatAchievements, syncedAt: json.timestamp || null };
+  // Music tracks: { "Track name": true/false } for unlocked or not.
+  const music = json.music_tracks && typeof json.music_tracks === 'object' ? json.music_tracks : null;
+  const musicTracks = music ? Object.entries(music).map(([name, unlocked]) => ({ name, unlocked: Boolean(unlocked) })) : null;
+  return { quests, diaries, combatAchievements, musicTracks, syncedAt: json.timestamp || null };
 }
 
 export function createUpstream({ fetch = globalThis.fetch, now = () => Date.now() } = {}) {

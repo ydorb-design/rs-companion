@@ -104,8 +104,8 @@ async function renderNext() {
   const el = document.getElementById('next');
   if (!el) return;
   const get = (path) => api(path).catch(() => null);
-  const [timers, checklist, progress, goals, slayer, events] = await Promise.all([
-    get('/timers'), get('/checklist'), get('/progress'), get('/goals'), get('/slayer'), get('/activity?limit=6'),
+  const [timers, checklist, progress, goals, slayer, events, supplies] = await Promise.all([
+    get('/timers'), get('/checklist'), get('/progress'), get('/goals'), get('/slayer'), get('/activity?limit=6'), get('/supplies'),
   ]);
   const now = timers ? timers.now : Date.now();
   const cards = [];
@@ -121,6 +121,10 @@ async function renderNext() {
   const todo = (checklist || []).filter((c) => !c.done);
   if (todo.length) {
     cards.push(nextCard('Still to do', '#/timers', todo.slice(0, 5).map((c) => `<li>${esc(c.label)} <span class="muted">${c.freq}</span></li>`), todo.length > 5 ? `${todo.length - 5} more` : ''));
+  }
+  const low = (supplies?.items || []).filter((i) => i.low);
+  if (low.length) {
+    cards.push(nextCard('Running low', '#/supplies', low.slice(0, 4).map((i) => `<li>${esc(i.itemName)} <span class="warn">${fmt(i.qty)}</span></li>`), low.length > 4 ? `${low.length - 4} more` : ''));
   }
   if (slayer?.current) {
     const t = slayer.current;

@@ -31,6 +31,7 @@ const WIKISYNC = {
   quests: { '.': 0, "Cook's Assistant": 2, 'Dragon Slayer I': 1, 'Monkey Madness I': 0, 'The Grand Tree': 2, 'Tree Gnome Village': 0 },
   achievement_diaries: { Ardougne: { Easy: { complete: true, tasks: [true] }, Medium: { complete: false, tasks: [false] } } },
   combat_achievements: [1, 4, 9],
+  music_tracks: { 'Harmony': true, 'Autumn Voyage': true, 'Zealot': false },
 };
 const WIKI = {
   "Cook's Assistant": '{{Quest details\n|start = Talk to the [[Cook]]\n|requirements = None\n|items = * [[Egg]]\n}}',
@@ -227,6 +228,7 @@ test('quests, requirements, diaries and combat achievements', async () => {
   assert.deepEqual(q['Monkey Madness I'].check.missing.map((m) => m.name), ['Tree Gnome Village']);
   assert.equal(q['Tree Gnome Village'].check.status, 'unknown'); // page missing
   assert.equal(p.combatAchievements.completed, 3);
+  assert.deepEqual(p.music, { unlocked: 2, total: 3, locked: ['Zealot'] });
   assert.ok(p.requirementsLoaded);
 
   // Manual override unlocks the dependant quest.

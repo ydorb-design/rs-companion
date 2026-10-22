@@ -66,7 +66,7 @@ export async function renderBossing() {
         </section>
         <div class="stack">
           <section class="card" id="kc-chart-card">
-            <div class="card-head"><h2>${esc(ui.selected)}</h2><a class="btn btn-sm" href="${wikiUrl(ui.selected)}" target="_blank" rel="noopener">Wiki</a></div>
+            <div class="card-head"><h2>${esc(ui.selected)}</h2><span class="row" style="gap:6px"><a class="btn btn-sm" href="#/bosses/${encodeURIComponent(ui.selected)}">Notes</a><a class="btn btn-sm" href="${wikiUrl(ui.selected)}" target="_blank" rel="noopener">Wiki</a></span></div>
             <div id="kc-chart"><p class="muted small">Loading…</p></div>
           </section>
           <section class="card">

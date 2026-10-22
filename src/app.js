@@ -18,6 +18,8 @@ import { slayerRoutes } from './routes/slayer.js';
 import { dropsRoutes } from './routes/drops.js';
 import { checklistRoutes } from './routes/checklist.js';
 import { exportRoutes } from './routes/export.js';
+import { suppliesRoutes } from './routes/supplies.js';
+import { bossesRoutes } from './routes/bosses.js';
 
 const PUBLIC_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 
@@ -25,7 +27,6 @@ export function createApp({ db, upstream, now = () => Date.now(), password = '',
   const app = express();
   // Behind Nginx Proxy Manager, trust its X-Forwarded-* headers (for secure cookies).
   app.set('trust proxy', true);
-  app.use(express.json());
 
   const ctx = createContext({ db, upstream, now });
   ctx.notify = createNotifier({ fetch, getSettings: ctx.getSettings });
@@ -39,8 +40,11 @@ export function createApp({ db, upstream, now = () => Date.now(), password = '',
     },
   });
   app.get('/api/health', (req, res) => res.json({ ok: true }));
+  // Small body limit before sign-in; backups can be large, so allow more once signed in.
+  app.use('/api/auth', express.json());
   app.use('/api', auth.router);
   app.use('/api', auth.guard);
+  app.use('/api', express.json({ limit: '100mb' }));
 
   const goals = goalsRoutes(ctx);
 
@@ -73,7 +77,9 @@ export function createApp({ db, upstream, now = () => Date.now(), password = '',
   app.use('/api', slayerRoutes(ctx));
   app.use('/api', dropsRoutes(ctx));
   app.use('/api', checklistRoutes(ctx));
-  app.use('/api', exportRoutes(ctx));
+  app.use('/api', exportRoutes(ctx, { onRestore: () => onSettingsChange() }));
+  app.use('/api', suppliesRoutes(ctx));
+  app.use('/api', bossesRoutes(ctx));
 
   app.use('/api', (req, res) => res.status(404).json({ error: 'Not found.' }));
   app.use(express.static(PUBLIC_DIR));

@@ -12,6 +12,8 @@ import { renderActivity } from './views/activity.js';
 import { renderSlayer } from './views/slayer.js';
 import { renderDrops } from './views/drops.js';
 import { renderCollection } from './views/collection.js';
+import { renderSupplies } from './views/supplies.js';
+import { renderBosses } from './views/bosses.js';
 
 async function loadSettings() {
   state.settings = await api('/settings');
@@ -67,6 +69,8 @@ const ROUTES = {
   slayer: renderSlayer,
   drops: renderDrops,
   collection: renderCollection,
+  supplies: renderSupplies,
+  bosses: renderBosses,
   goals: renderGoals,
   quests: renderQuests,
   timers: renderTimers,
