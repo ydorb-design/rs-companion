@@ -55,6 +55,7 @@ async function renderBoss(name) {
     <div class="stack">
       <div class="kpis">
         <div class="kpi"><div class="kpi-label">Kill count</div><div class="kpi-value">${b.kc != null ? fmt(b.kc) : '–'}</div></div>
+        ${b.personalBest != null ? `<div class="kpi"><div class="kpi-label">Personal best</div><div class="kpi-value">${pbTime(b.personalBest)}</div></div>` : ''}
         <div class="kpi"><div class="kpi-label">Drops logged</div><div class="kpi-value">${b.drops.length}</div></div>
         <div class="kpi"><div class="kpi-label">Collection log list</div><div class="kpi-value">${got}<span class="kpi-sub muted"> / ${b.collectionLog.length}</span></div></div>
       </div>
@@ -102,4 +103,13 @@ async function renderBoss(name) {
     if (!confirm(`Delete your notes for ${b.name}?`)) return;
     if (await busy(e.currentTarget, () => api(`/bosses/${encodeURIComponent(b.name)}`, { method: 'DELETE' }), 'Notes deleted')) renderBoss(b.name);
   });
+}
+
+// 58.2 -> "0:58.2", 2794 -> "46:34", 3723 -> "1:02:03"
+function pbTime(seconds) {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const frac = seconds % 1;
+  const sec = (seconds % 60).toFixed(frac ? 1 : 0).padStart(frac ? 4 : 2, '0');
+  return h ? `${h}:${String(m).padStart(2, '0')}:${sec}` : `${m}:${sec}`;
 }

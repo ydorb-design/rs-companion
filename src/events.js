@@ -72,8 +72,16 @@ export function eventsFromSync(prev, next) {
 export function createEvents(db) {
   const insert = db.prepare('INSERT INTO events (player, at, type, title, detail, ref) VALUES (?, ?, ?, ?, ?, ?)');
   return {
-    add(player, at, e) {
+    // With dedupeDays, skips the event if the same one was already recorded recently
+    // (e.g. a level-up reported by Dink and then seen again in the hiscores).
+    add(player, at, e, { dedupeDays } = {}) {
+      if (dedupeDays) {
+        const seen = db.prepare('SELECT 1 FROM events WHERE player = ? AND type = ? AND title = ? AND at >= ?')
+          .get(player, e.type, e.title, at - dedupeDays * 86_400_000);
+        if (seen) return false;
+      }
       insert.run(player, at, e.type, e.title, e.detail || '', e.ref || null);
+      return true;
     },
     removeRef(ref) {
       db.prepare('DELETE FROM events WHERE ref = ?').run(ref);

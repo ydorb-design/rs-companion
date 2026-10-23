@@ -21,7 +21,7 @@ export function slayerRoutes(ctx) {
 
   r.get('/slayer', (req, res) => {
     const { key } = ctx.requireAccount();
-    const history = db.prepare("SELECT * FROM slayer_tasks WHERE player = ? AND outcome != 'active' ORDER BY ended_at DESC LIMIT 200").all(key);
+    const history = db.prepare("SELECT * FROM slayer_tasks WHERE player = ? AND outcome != 'active' ORDER BY ended_at DESC, id DESC LIMIT 200").all(key);
     const counts = db.prepare("SELECT outcome, COUNT(*) AS n FROM slayer_tasks WHERE player = ? GROUP BY outcome").all(key);
     const top = db.prepare("SELECT monster, COUNT(*) AS n FROM slayer_tasks WHERE player = ? GROUP BY lower(monster) ORDER BY n DESC LIMIT 1").get(key);
     const monsters = db.prepare('SELECT DISTINCT monster FROM slayer_tasks WHERE player = ? ORDER BY monster').all(key).map((x) => x.monster);
@@ -30,6 +30,7 @@ export function slayerRoutes(ctx) {
       current: view(current(key)),
       history: history.map(view),
       points: ctx.getSettings()[pointsKey(key)] ?? null,
+      gameTasks: ctx.getSettings()[`slayerGameTasks:${key}`] ?? null,
       completed: stat.complete || 0,
       skipped: stat.skip || 0,
       topMonster: top ? { monster: top.monster, count: top.n } : null,

@@ -29,7 +29,7 @@ export function statsRoutes(ctx, { onRefreshed } = {}) {
     // Store a row when anything changed, or daily so charts have a baseline.
     if (changed || now() - last.takenAt > DAY) {
       db.prepare('INSERT INTO snapshots (player, taken_at, data) VALUES (?, ?, ?)').run(account.key, now(), JSON.stringify(data));
-      for (const e of eventsFromSnapshots(last, data)) ctx.events.add(account.key, now(), e);
+      for (const e of eventsFromSnapshots(last, data)) ctx.events.add(account.key, now(), e, { dedupeDays: 7 });
     }
     const levelUps = [];
     if (last) {

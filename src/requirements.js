@@ -47,7 +47,7 @@ export function parseRequirements(wikitext, knownQuests, selfName = '') {
 }
 
 // Compares requirements with the player's levels and quest progress.
-export function checkRequirements(req, { levels, combatLevel, questStates }) {
+export function checkRequirements(req, { levels, combatLevel, questStates, questPoints = null }) {
   if (!req) return { status: 'unknown', missing: [] };
   const missing = [];
   for (const [skill, level] of Object.entries(req.skills)) {
@@ -55,6 +55,10 @@ export function checkRequirements(req, { levels, combatLevel, questStates }) {
   }
   if (req.combat && combatLevel != null && combatLevel < req.combat) {
     missing.push({ type: 'skill', name: 'Combat', level: req.combat, have: combatLevel });
+  }
+  // Quest points are only known once Dink has reported a quest completion.
+  if (req.questPoints && questPoints != null && questPoints < req.questPoints) {
+    missing.push({ type: 'qp', name: 'Quest points', level: req.questPoints, have: questPoints });
   }
   for (const q of req.quests) {
     if (questStates[q] !== 'complete') missing.push({ type: 'quest', name: q });

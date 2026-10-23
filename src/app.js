@@ -20,6 +20,7 @@ import { checklistRoutes } from './routes/checklist.js';
 import { exportRoutes } from './routes/export.js';
 import { suppliesRoutes } from './routes/supplies.js';
 import { bossesRoutes } from './routes/bosses.js';
+import { dinkRoutes } from './routes/dink.js';
 
 const PUBLIC_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 
@@ -40,6 +41,10 @@ export function createApp({ db, upstream, now = () => Date.now(), password = '',
     },
   });
   app.get('/api/health', (req, res) => res.json({ ok: true }));
+  const drops = dropsRoutes(ctx);
+  const dink = dinkRoutes(ctx, { drops });
+  // Dink can't sign in, so its endpoint sits before the login check and uses a secret token instead.
+  app.post('/api/dink/:token', dink.receive);
   // Small body limit before sign-in; backups can be large, so allow more once signed in.
   app.use('/api/auth', express.json());
   app.use('/api', auth.router);
@@ -75,11 +80,12 @@ export function createApp({ db, upstream, now = () => Date.now(), password = '',
   app.use('/api', timers.router);
   app.use('/api', activityRoutes(ctx));
   app.use('/api', slayerRoutes(ctx));
-  app.use('/api', dropsRoutes(ctx));
+  app.use('/api', drops.router);
   app.use('/api', checklistRoutes(ctx));
   app.use('/api', exportRoutes(ctx, { onRestore: () => onSettingsChange() }));
   app.use('/api', suppliesRoutes(ctx));
   app.use('/api', bossesRoutes(ctx));
+  app.use('/api', dink.router);
 
   app.use('/api', (req, res) => res.status(404).json({ error: 'Not found.' }));
   app.use(express.static(PUBLIC_DIR));

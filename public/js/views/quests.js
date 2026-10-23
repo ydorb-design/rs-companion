@@ -3,6 +3,7 @@ import {
 } from '../lib.js';
 
 const ui = { filter: 'all', q: '', music: '' };
+let questPointsKnown = null;
 const STATE_LABELS = { not_started: 'Not started', in_progress: 'In progress', complete: 'Complete' };
 const CA_TIERS = ['None', 'Easy', 'Medium', 'Hard', 'Elite', 'Master', 'Grandmaster'];
 const FILTERS = [['all', 'All'], ['ready', 'Can start'], ['in_progress', 'In progress'], ['not_started', 'Not started'], ['complete', 'Complete']];
@@ -20,11 +21,13 @@ function matches(q) {
 function requirementLine(q) {
   if (q.state === 'complete') return '';
   const { status, missing } = q.check;
-  const qp = q.requirements?.questPoints ? ` <span class="muted">· ${q.requirements.questPoints} quest points (not checked)</span>` : '';
+  // Quest points are checked once Dink has reported your total; until then they're just shown.
+  const qp = q.requirements?.questPoints && questPointsKnown == null ? ` <span class="muted">· ${q.requirements.questPoints} quest points (not checked)</span>` : '';
   if (status === 'ready') return `<div class="req"><span class="pos">${qp ? 'Skill and quest requirements met' : 'Requirements met'}</span>${qp}</div>`;
   if (status === 'locked') {
     const parts = missing.map((m) => (m.type === 'skill'
       ? `${esc(m.name)} ${m.level} <span class="muted">(${m.have})</span>`
+      : m.type === 'qp' ? `${m.level} quest points <span class="muted">(${m.have})</span>`
       : `<a href="${wikiUrl(m.name)}" target="_blank" rel="noopener">${esc(m.name)}</a>`));
     return `<div class="req"><span class="warn">Needs</span> ${parts.join(', ')}${qp}</div>`;
   }
@@ -35,6 +38,7 @@ function requirementLine(q) {
 export async function renderQuests() {
   if (!state.settings.active) return (view.innerHTML = needsAccount());
   const p = await api('/progress');
+  questPointsKnown = p.questPoints;
   const counts = { complete: 0, in_progress: 0, ready: 0 };
   for (const q of p.quests) {
     if (q.state in counts) counts[q.state]++;
@@ -104,6 +108,7 @@ export async function renderQuests() {
 
           <section class="card">
             <div class="card-head"><h2>Combat achievements</h2><a class="btn btn-sm" href="${wikiUrl('Combat Achievements')}" target="_blank" rel="noopener">Wiki</a></div>
+            ${p.combatAchievements.points?.total != null ? `<p class="small" style="margin-bottom:6px"><b>${p.combatAchievements.points.total.toLocaleString('en-AU')}</b> points${p.combatAchievements.points.possible ? ` of ${p.combatAchievements.points.possible.toLocaleString('en-AU')}` : ''}, from Dink.</p>` : ''}
             <p class="small">${p.combatAchievements.completed != null
               ? `<b>${p.combatAchievements.completed}</b> tasks complete, from WikiSync.`
               : '<span class="muted">WikiSync hasn\'t sent combat achievement data yet.</span>'}</p>

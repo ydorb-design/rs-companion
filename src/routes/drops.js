@@ -61,29 +61,38 @@ export function dropsRoutes(ctx) {
     });
   });
 
+  // Shared by the form and by Dink. Returns the new drop's id and whether it ticked off a collection log item.
+  function recordDrop(key, { itemId, name, icon, qty, source = '', valueEach = null, note = '' }, { event = true } = {}) {
+    const { lastInsertRowid: id } = db.prepare(
+      'INSERT INTO drops (player, item_id, item_name, icon, qty, source, value_each, note, at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    ).run(key, itemId ?? null, name, icon ?? null, qty, source, valueEach, note, now());
+    if (event) {
+      const value = valueEach != null ? valueEach * qty : null;
+      ctx.events.add(key, now(), {
+        type: 'drop',
+        title: `${qty > 1 ? `${qty.toLocaleString('en-AU')} x ` : ''}${name}${source ? ` from ${source}` : ''}`,
+        detail: value ? `${value.toLocaleString('en-AU')} gp` : '',
+        ref: `drop:${id}`,
+      });
+    }
+    // Logging a drop ticks it off the collection log list.
+    const match = itemId != null
+      ? db.prepare('SELECT * FROM clog_items WHERE player = ? AND item_id = ? AND obtained_at IS NULL').get(key, itemId)
+      : db.prepare('SELECT * FROM clog_items WHERE player = ? AND lower(item_name) = lower(?) AND obtained_at IS NULL').get(key, name);
+    if (match) markObtained(key, match);
+    return { id, collectionLog: Boolean(match) };
+  }
+
   r.post('/drops', async (req, res) => {
     const { key } = ctx.requireAccount();
     const item = await itemInfo(req.body);
     const qty = Math.round(Number(req.body.qty || 1));
     if (!(qty >= 1 && qty <= 2_147_483_647)) throw new BadRequest('Quantity must be at least 1.');
-    const source = String(req.body.source || '').trim().slice(0, 60);
-    const { lastInsertRowid: id } = db.prepare(
-      'INSERT INTO drops (player, item_id, item_name, icon, qty, source, value_each, note, at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    ).run(key, item.id, item.name, item.icon, qty, source, item.price, String(req.body.note || '').slice(0, 200), now());
-    const value = item.price != null ? item.price * qty : null;
-    ctx.events.add(key, now(), {
-      type: 'drop',
-      title: `${qty > 1 ? `${qty.toLocaleString('en-AU')} x ` : ''}${item.name}${source ? ` from ${source}` : ''}`,
-      detail: value ? `${value.toLocaleString('en-AU')} gp` : '',
-      ref: `drop:${id}`,
+    const result = recordDrop(key, {
+      itemId: item.id, name: item.name, icon: item.icon, qty, valueEach: item.price,
+      source: String(req.body.source || '').trim().slice(0, 60), note: String(req.body.note || '').slice(0, 200),
     });
-
-    // Logging a drop ticks it off the collection log list.
-    const match = item.id != null
-      ? db.prepare('SELECT * FROM clog_items WHERE player = ? AND item_id = ? AND obtained_at IS NULL').get(key, item.id)
-      : db.prepare('SELECT * FROM clog_items WHERE player = ? AND lower(item_name) = lower(?) AND obtained_at IS NULL').get(key, item.name);
-    if (match) markObtained(key, match);
-    res.status(201).json({ id, collectionLog: Boolean(match) });
+    res.status(201).json(result);
   });
 
   r.delete('/drops/:id', (req, res) => {
@@ -102,6 +111,19 @@ export function dropsRoutes(ctx) {
     });
   }
 
+  // A new collection log slot reported by the game (via Dink). Ticks it off the list, or adds it as obtained.
+  function obtainCollectionItem(key, { itemId, name, icon, source = '' }) {
+    const existing = itemId != null
+      ? db.prepare('SELECT * FROM clog_items WHERE player = ? AND item_id = ?').all(key, itemId)
+      : db.prepare('SELECT * FROM clog_items WHERE player = ? AND lower(item_name) = lower(?)').all(key, name);
+    const pending = existing.find((i) => !i.obtained_at);
+    if (pending) return markObtained(key, pending);
+    if (existing.length) return; // already obtained
+    const { lastInsertRowid } = db.prepare('INSERT INTO clog_items (player, item_id, item_name, icon, source, created_at) VALUES (?, ?, ?, ?, ?, ?)')
+      .run(key, itemId ?? null, name, icon ?? null, source, now());
+    markObtained(key, db.prepare('SELECT * FROM clog_items WHERE id = ?').get(lastInsertRowid));
+  }
+
   r.get('/collection-log', (req, res) => {
     const { key } = ctx.requireAccount();
     const items = db.prepare('SELECT * FROM clog_items WHERE player = ? ORDER BY source, item_name').all(key).map((i) => ({
@@ -109,7 +131,9 @@ export function dropsRoutes(ctx) {
     }));
     const latest = ctx.latestSnapshot(key);
     const logged = latest?.activities.find((a) => a.name === 'Collections Logged')?.score ?? null;
-    res.json({ items, hiscoresLogged: logged });
+    // Dink reports the exact slot count with each new item, which is fresher than the hiscores.
+    const live = ctx.getSettings()[`clogCount:${key}`] || null;
+    res.json({ items, hiscoresLogged: logged, live });
   });
 
   r.post('/collection-log', async (req, res) => {
@@ -142,5 +166,5 @@ export function dropsRoutes(ctx) {
     res.json({ ok: true });
   });
 
-  return r;
+  return { router: r, recordDrop, obtainCollectionItem };
 }

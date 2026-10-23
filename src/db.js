@@ -136,6 +136,21 @@ CREATE TABLE IF NOT EXISTS boss_notes (
   updated_at INTEGER NOT NULL,
   PRIMARY KEY (player, boss)
 );
+CREATE TABLE IF NOT EXISTS boss_records (
+  player TEXT NOT NULL,
+  boss TEXT NOT NULL,
+  count INTEGER,
+  pb_seconds REAL,
+  updated_at INTEGER NOT NULL,
+  PRIMARY KEY (player, boss)
+);
+CREATE TABLE IF NOT EXISTS dink_log (
+  id INTEGER PRIMARY KEY,
+  at INTEGER NOT NULL,
+  player TEXT NOT NULL,
+  type TEXT NOT NULL,
+  outcome TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS watchlist (
   item_id INTEGER PRIMARY KEY,
   added_at INTEGER NOT NULL

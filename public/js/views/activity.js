@@ -1,7 +1,7 @@
 import { EVENT_TYPES, api, emptyState, esc, needsAccount, segmented, state, view } from '../lib.js';
 
 const ui = { type: '' };
-const FILTERS = [['', 'All'], ['level', 'Levels'], ['kc', 'Kill counts'], ['quest', 'Quests'], ['diary', 'Diaries'], ['drop', 'Drops'], ['slayer', 'Slayer'], ['clog', 'Collection log']];
+const FILTERS = [['', 'All'], ['level', 'Levels'], ['kc', 'Kill counts'], ['quest', 'Quests'], ['diary', 'Diaries'], ['drop', 'Drops'], ['slayer', 'Slayer'], ['clog', 'Collection log'], ['pb', 'Personal bests'], ['ca', 'Combat tasks'], ['clue', 'Clues'], ['pet', 'Pets'], ['death', 'Deaths']];
 
 const dayLabel = (t) => {
   const d = new Date(t), today = new Date();

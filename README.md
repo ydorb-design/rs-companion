@@ -99,11 +99,19 @@ Quest and diary progress comes from the OSRS Wiki's **WikiSync** RuneLite plugin
 
 After that it syncs automatically on the refresh interval. Anything you change by hand is kept as an override (dashed outline on diaries, "Manual" tag on quests) until you clear it.
 
+## RuneLite (Dink)
+
+Install the [Dink](https://github.com/pajlads/DinkPlugin) plugin from the RuneLite Plugin Hub and point it at the app, and drops, collection log slots, Slayer tasks, kill counts and personal bests, quests, diaries, combat tasks, clues, pets and level-ups arrive as you play.
+
+The app's address for Dink, and step-by-step setup, are in **Settings > RuneLite (Dink)**. The address contains a secret, so keep it private; you can make a new one there if it leaks. Recent messages are listed under it to help check the setup.
+
+Dink only sends drops above its **Min Loot value**, and new collection log slots need the in-game setting **Collection log - New addition notification** turned on.
+
 ## Quest requirements
 
 When you sync, the app reads each quest's requirements from its OSRS Wiki page and checks them against your levels and quest progress. Results are cached for 30 days; **Reload requirements** fetches them again.
 
-- Skill, combat level and quest requirements are checked. Quest point requirements are shown but not checked.
+- Skill, combat level and quest requirements are checked. Quest point requirements are checked once Dink has reported your quest points (it sends them with each quest you complete).
 - If a quest page can't be read, it shows "Requirements not found on the wiki" rather than guessing.
 
 ## Collection log

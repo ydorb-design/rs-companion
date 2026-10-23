@@ -24,7 +24,7 @@ export function progressRoutes(ctx) {
 
   async function syncProgress(account = ctx.requireAccount()) {
     const data = await ctx.upstream.wikiSync(account.player);
-    for (const e of eventsFromSync(synced(account.key), data)) ctx.events.add(account.key, now(), e);
+    for (const e of eventsFromSync(synced(account.key), data)) ctx.events.add(account.key, now(), e, { dedupeDays: 30 });
     db.prepare('INSERT INTO wikisync (player, fetched_at, data) VALUES (?, ?, ?) ON CONFLICT(player) DO UPDATE SET fetched_at = excluded.fetched_at, data = excluded.data')
       .run(account.key, now(), JSON.stringify(data));
     return data;
@@ -67,13 +67,14 @@ export function progressRoutes(ctx) {
       return { name: q.name, state, synced: q.state, manual: q.name in questOverrides };
     }).sort((a, b) => a.name.localeCompare(b.name));
 
+    const questPoints = ctx.getSettings()[`questPoints:${key}`] ?? null;
     const latest = ctx.latestSnapshot(key);
     const levels = Object.fromEntries((latest?.skills || []).map((x) => [x.name, x.level]));
     const cb = latest ? combatLevel(latest.skills) : null;
     for (const q of quests) {
       const req = q.name in reqs ? reqs[q.name] : undefined;
       q.requirements = req ?? null;
-      q.check = req === undefined ? { status: 'not_loaded', missing: [] } : checkRequirements(req, { levels, combatLevel: cb, questStates });
+      q.check = req === undefined ? { status: 'not_loaded', missing: [] } : checkRequirements(req, { levels, combatLevel: cb, questStates, questPoints });
     }
 
     const diaries = DIARY_REGIONS.map((region) => ({
@@ -86,11 +87,13 @@ export function progressRoutes(ctx) {
     }));
 
     const caTier = ctx.getSettings()[`caTier:${key}`] || 'None';
+    const caPoints = ctx.getSettings()[`caPoints:${key}`] || null;
     res.json({
       fetchedAt: s.fetchedAt,
       quests,
       diaries,
-      combatAchievements: { completed: s.combatAchievements ?? null, tier: caTier },
+      combatAchievements: { completed: s.combatAchievements ?? null, tier: caTier, points: caPoints },
+      questPoints,
       music: s.musicTracks ? {
         unlocked: s.musicTracks.filter((m) => m.unlocked).length,
         total: s.musicTracks.length,

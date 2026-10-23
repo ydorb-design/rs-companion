@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-const TYPES = ['level', 'kc', 'collection', 'quest', 'diary', 'drop', 'slayer', 'clog'];
+const TYPES = ['level', 'kc', 'pb', 'collection', 'quest', 'diary', 'ca', 'drop', 'clue', 'pet', 'slayer', 'clog', 'death'];
 
 export function activityRoutes(ctx) {
   const r = Router();

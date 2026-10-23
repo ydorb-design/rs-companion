@@ -18,7 +18,7 @@ export async function renderSlayer() {
       <div class="kpis">
         <div class="kpi"><div class="kpi-label">Slayer level</div><div class="kpi-value">${level ?? '–'}</div></div>
         <div class="kpi"><div class="kpi-label">Points</div><div class="kpi-value">${s.points != null ? fmt(s.points) : '–'}</div></div>
-        <div class="kpi"><div class="kpi-label">Tasks completed</div><div class="kpi-value">${fmt(s.completed)}<span class="kpi-sub muted"> · ${s.skipped} skipped</span></div></div>
+        <div class="kpi"><div class="kpi-label">Tasks completed</div><div class="kpi-value">${s.gameTasks != null ? fmt(s.gameTasks) : fmt(s.completed)}<span class="kpi-sub muted"> · ${s.skipped} skipped</span></div></div>
         <div class="kpi"><div class="kpi-label">Most assigned</div><div class="kpi-value kpi-text">${s.topMonster ? esc(s.topMonster.monster) : '–'}</div></div>
       </div>
 

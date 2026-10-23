@@ -228,6 +228,11 @@ export const EVENT_TYPES = {
   slayer: 'Slayer',
   clog: 'Collection log',
   collection: 'Collection log',
+  pb: 'Personal best',
+  ca: 'Combat task',
+  clue: 'Clue',
+  pet: 'Pet',
+  death: 'Death',
 };
 
 export function eventRow(e) {

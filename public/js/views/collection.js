@@ -23,7 +23,7 @@ export async function renderCollection() {
     </div>
     <div class="stack">
       <div class="kpis">
-        <div class="kpi"><div class="kpi-label">Slots logged in game</div><div class="kpi-value">${c.hiscoresLogged != null ? fmt(c.hiscoresLogged) : '–'}</div></div>
+        <div class="kpi"><div class="kpi-label">Slots logged in game</div><div class="kpi-value">${c.live ? `${fmt(c.live.completed)}${c.live.total ? `<span class="kpi-sub muted"> / ${fmt(c.live.total)}</span>` : ''}` : c.hiscoresLogged != null ? fmt(c.hiscoresLogged) : '–'}</div></div>
         <div class="kpi"><div class="kpi-label">On your list</div><div class="kpi-value">${c.items.length}</div></div>
         <div class="kpi"><div class="kpi-label">Obtained</div><div class="kpi-value">${obtained}<span class="kpi-sub muted"> / ${c.items.length}</span></div></div>
       </div>

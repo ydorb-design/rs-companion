@@ -56,6 +56,25 @@ export async function renderSettings({ reload }) {
       </form>
 
       <section class="card">
+        <div class="card-head"><h2>RuneLite (Dink)</h2></div>
+        <p class="small">The <b>Dink</b> plugin can send drops, collection log slots, Slayer tasks, kill counts, quests and diaries here as they happen.</p>
+        <ol class="steps small">
+          <li>In RuneLite, install <b>Dink</b> from the Plugin Hub.</li>
+          <li>In Dink's settings, under <b>Webhook Overrides</b>, paste this address into <b>Primary Webhook URLs</b>. If you already have a Discord webhook there, put this on a new line so both get messages.</li>
+          <li>Turn on the notifiers you want: Loot, Collection Log, Slayer, Kill Count, Quests, Achievement Diary, Combat Tasks, Clue Scrolls, Pet, Levels.</li>
+          <li>For every kill count and personal best, set <b>Kill Count Interval</b> to 1. <b>Min Loot value</b> decides which drops get logged.</li>
+          <li>In game, turn on <b>Settings &gt; All Settings &gt; Chat &gt; Collection log - New addition notification</b>, or Dink can't see new slots.</li>
+        </ol>
+        <div class="copy-row">
+          <input id="dink-url" readonly aria-label="Dink webhook address" value="Loading…">
+          <button class="btn" type="button" id="dink-copy">Copy</button>
+        </div>
+        <p class="hint" style="margin-top:8px">Keep this address private: anyone with it can add data to your app. Use the address you open the app with on the PC that runs RuneLite. <button class="link-btn" type="button" id="dink-reset">Make a new address</button></p>
+        <h3 class="sub-head" style="margin-top:16px">Recent messages</h3>
+        <ul class="dink-log small" id="dink-log"><li class="muted">Loading…</li></ul>
+      </section>
+
+      <section class="card">
         <div class="card-head"><h2>Appearance</h2></div>
         <div class="row" style="justify-content:space-between">
           <span class="small">Theme <span class="hint">Saved on this device</span></span>
@@ -134,6 +153,23 @@ export async function renderSettings({ reload }) {
     await reload();
     await api('/notifications/test', { method: 'POST' });
   }, 'Test alert sent'));
+  loadDink();
+  document.getElementById('dink-copy').addEventListener('click', async () => {
+    const input = document.getElementById('dink-url');
+    try {
+      await navigator.clipboard.writeText(input.value);
+      toast('Copied');
+    } catch {
+      // Clipboard needs HTTPS; fall back to selecting the text.
+      input.select();
+      toast('Select and copy the address', { error: false });
+    }
+  });
+  document.getElementById('dink-reset').addEventListener('click', async (e) => {
+    if (!confirm('Make a new address? The old one stops working, so you\'ll need to paste the new one into Dink.')) return;
+    if (await busy(e.currentTarget, () => api('/dink-config/token', { method: 'POST' }), 'New address made')) loadDink();
+  });
+
   view.querySelectorAll('[data-theme]').forEach((b) => b.addEventListener('click', () => {
     setTheme(b.dataset.theme);
     view.querySelectorAll('[data-theme]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
@@ -163,4 +199,20 @@ export async function renderSettings({ reload }) {
     await api('/auth/logout', { method: 'POST' });
     location.reload();
   });
+}
+
+async function loadDink() {
+  const input = document.getElementById('dink-url');
+  const list = document.getElementById('dink-log');
+  if (!input) return;
+  try {
+    const d = await api('/dink-config');
+    input.value = `${location.origin}${d.path}`;
+    list.innerHTML = d.recent.length
+      ? d.recent.map((m) => `<li><span class="muted">${new Date(m.at).toLocaleString('en-AU', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}</span>
+          <b>${esc(m.type || '?')}</b> <span>${esc(m.outcome)}</span></li>`).join('')
+      : '<li class="muted">Nothing received yet. Messages show here once Dink sends one, which helps check it\'s set up right.</li>';
+  } catch (err) {
+    list.innerHTML = `<li class="neg">${esc(err.message)}</li>`;
+  }
 }
