@@ -104,8 +104,8 @@ async function renderNext() {
   const el = document.getElementById('next');
   if (!el) return;
   const get = (path) => api(path).catch(() => null);
-  const [timers, checklist, progress, goals, slayer, events, supplies] = await Promise.all([
-    get('/timers'), get('/checklist'), get('/progress'), get('/goals'), get('/slayer'), get('/activity?limit=6'), get('/supplies'),
+  const [timers, checklist, progress, goals, slayer, events, supplies, guide] = await Promise.all([
+    get('/timers'), get('/checklist'), get('/progress'), get('/goals'), get('/slayer'), get('/activity?limit=6'), get('/supplies'), get('/guide'),
   ]);
   const now = timers ? timers.now : Date.now();
   const cards = [];
@@ -121,6 +121,10 @@ async function renderNext() {
   const todo = (checklist || []).filter((c) => !c.done);
   if (todo.length) {
     cards.push(nextCard('Still to do', '#/timers', todo.slice(0, 5).map((c) => `<li>${esc(c.label)} <span class="muted">${c.freq}</span></li>`), todo.length > 5 ? `${todo.length - 5} more` : ''));
+  }
+  const guideNext = (guide?.steps || []).filter((s) => s.status === 'ready');
+  if (guideNext.length) {
+    cards.push(nextCard('Iron guide', '#/guide', guideNext.slice(0, 3).map((s) => `<li>${esc(s.title)}</li>`), guideNext.length > 3 ? `${guideNext.length - 3} more ready` : ''));
   }
   const low = (supplies?.items || []).filter((i) => i.low);
   if (low.length) {

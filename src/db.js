@@ -151,6 +151,12 @@ CREATE TABLE IF NOT EXISTS dink_log (
   type TEXT NOT NULL,
   outcome TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS guide_progress (
+  player TEXT NOT NULL,
+  step_id TEXT NOT NULL,
+  done_at INTEGER NOT NULL,
+  PRIMARY KEY (player, step_id)
+);
 CREATE TABLE IF NOT EXISTS watchlist (
   item_id INTEGER PRIMARY KEY,
   added_at INTEGER NOT NULL

@@ -14,6 +14,7 @@ import { renderDrops } from './views/drops.js';
 import { renderCollection } from './views/collection.js';
 import { renderSupplies } from './views/supplies.js';
 import { renderBosses } from './views/bosses.js';
+import { renderGuide } from './views/guide.js';
 
 async function loadSettings() {
   state.settings = await api('/settings');
@@ -71,6 +72,7 @@ const ROUTES = {
   collection: renderCollection,
   supplies: renderSupplies,
   bosses: renderBosses,
+  guide: renderGuide,
   goals: renderGoals,
   quests: renderQuests,
   timers: renderTimers,

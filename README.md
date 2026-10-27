@@ -8,6 +8,7 @@ A self-hosted Old School RuneScape companion you run in Docker and open in a bro
 - **Quests and diaries**: progress synced from WikiSync, quest requirements from the OSRS Wiki checked against your stats, combat achievements and music track unlocks
 - **Timers**: herb, birdhouse, tree and daily reset timers, with alerts when they finish
 - **Tasks**: a To do / Doing / Done board, with ironman unlock and gear checklists to start from
+- **Iron guide**: key ironman quests, gear, items, skill unlocks and diaries, each with why it matters. Steps tick off from your stats, WikiSync and collection log, and quests show whether you meet their requirements
 - **Prices**: live Grand Exchange prices, high alch values, alch profit and a watchlist
 - **Alerts**: Discord or ntfy messages when a timer finishes, you level up, or you complete a goal
 - **Activity feed**: level-ups, kill count milestones, quests, diaries, drops and Slayer tasks in one timeline
