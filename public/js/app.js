@@ -14,7 +14,7 @@ import { renderDrops } from './views/drops.js';
 import { renderCollection } from './views/collection.js';
 import { renderSupplies } from './views/supplies.js';
 import { renderBosses } from './views/bosses.js';
-import { renderGuide } from './views/guide.js';
+import { renderGuides } from './views/guide.js';
 
 async function loadSettings() {
   state.settings = await api('/settings');
@@ -72,7 +72,7 @@ const ROUTES = {
   collection: renderCollection,
   supplies: renderSupplies,
   bosses: renderBosses,
-  guide: renderGuide,
+  guides: renderGuides,
   goals: renderGoals,
   quests: renderQuests,
   timers: renderTimers,
@@ -82,6 +82,8 @@ const ROUTES = {
 };
 
 async function route() {
+  // The Iron guide used to live at #/guide.
+  if (location.hash === '#/guide') return location.replace('#/guides/iron');
   const [name = 'overview', param] = location.hash.replace(/^#\/?/, '').split('/');
   const render = ROUTES[name] || renderOverview;
   const navName = name === 'skill' ? 'overview' : name;

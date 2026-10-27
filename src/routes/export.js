@@ -6,8 +6,8 @@ const TABLES = [
   'snapshots', 'goals', 'tasks', 'timers', 'wikisync', 'quest_overrides', 'diary_overrides', 'events',
   'slayer_tasks', 'drops', 'clog_items', 'checklist', 'watchlist', 'supplies', 'boss_notes', 'boss_records', 'guide_progress',
 ];
-// Never export credentials or the login signing secret.
-const PRIVATE_SETTINGS = ['secret', 'discordWebhook', 'ntfyUrl', 'dinkToken'];
+// Never export credentials or the login signing secret; the quest route is a cache of a wiki page.
+const PRIVATE_SETTINGS = ['secret', 'discordWebhook', 'ntfyUrl', 'dinkToken', 'questRoute'];
 
 export function exportRoutes(ctx, { onRestore = () => {} } = {}) {
   const r = Router();
