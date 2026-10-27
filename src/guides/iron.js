@@ -1,24 +1,13 @@
 // Ironman progression guide: well-known milestones with why they matter.
-// Each step is ticked automatically when its checks are met, or by hand.
-//
-// Each step has:
-//   done      checks that mean the step is complete (ticked automatically when all are met)
-//   requires  checks you need before you can do it (shows the step as Ready)
-// Check types:
-//   { skill, level }            skill at or above a level
-//   { quest }                   quest complete
-//   { quest, started: true }    quest started or complete
-//   { diary, tier }             achievement diary tier complete
-//   { item }                    item ticked off on your collection log list
-// A step with no done checks, or one you've done some other way, can be ticked by hand.
+// Step and check format: see index.js.
 
-export const GUIDE_STAGES = [
+const STAGES = [
   { id: 'early', name: 'Early game', blurb: 'Unlocks that make everything after them faster.' },
   { id: 'mid', name: 'Mid game', blurb: 'Core gear, combat unlocks and the bigger quests.' },
   { id: 'late', name: 'Late game', blurb: 'Endgame bosses, best-in-slot items and prayers.' },
 ];
 
-export const GUIDE_STEPS = [
+const STEPS = [
   // Early game
   {
     id: 'waterfall', stage: 'early', category: 'quest', title: 'Waterfall Quest',
@@ -241,26 +230,11 @@ export const GUIDE_STEPS = [
   },
 ];
 
-function evaluateCheck(c, ctx) {
-  if (c.skill) return { ...c, label: `${c.level} ${c.skill}`, met: (ctx.levels[c.skill] ?? 1) >= c.level };
-  if (c.quest) {
-    const state = ctx.questStates[c.quest.toLowerCase()];
-    return { ...c, label: c.started ? `Start ${c.quest}` : c.quest, met: state === 'complete' || (Boolean(c.started) && state === 'in_progress') };
-  }
-  if (c.diary) return { ...c, label: `${c.diary} ${c.tier} diary`, met: Boolean(ctx.diaries[c.diary]?.[c.tier]) };
-  if (c.item) return { ...c, label: c.item, met: ctx.obtained.has(c.item.toLowerCase()) };
-  return { ...c, label: '?', met: false };
-}
-
-// ctx: { levels, questStates (lower-case names), diaries, obtained (Set of lower-case item names), manual (Set of step ids) }
-// questRequirements (optional): quest name -> extra checks from the wiki, added to quest steps' requirements.
-export function evaluateStep(step, ctx) {
-  const extra = ctx.questRequirements?.(step) || [];
-  const requires = [...(step.requires || []).map((c) => evaluateCheck(c, ctx)), ...extra];
-  const done = (step.done || []).map((c) => evaluateCheck(c, ctx));
-  const autoDone = done.length > 0 && done.every((c) => c.met);
-  const manual = ctx.manual.has(step.id);
-  // "Ready" only when there are requirements and they're all met; otherwise it's just something to do.
-  const status = autoDone || manual ? 'done' : !requires.length ? 'todo' : requires.every((c) => c.met) ? 'ready' : 'locked';
-  return { requires, done, status, auto: autoDone, manual };
-}
+export const iron = {
+  id: 'iron',
+  name: 'Iron guide',
+  blurb: 'Key ironman quests, gear, items, skill unlocks and diaries, and why each one matters.',
+  categories: [['quest', 'Quests'], ['gear', 'Gear'], ['item', 'Items'], ['skill', 'Skills'], ['diary', 'Diaries']],
+  stages: STAGES,
+  steps: STEPS,
+};
