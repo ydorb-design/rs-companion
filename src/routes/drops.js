@@ -1,6 +1,10 @@
 // Drop log and collection log targets.
 import { Router } from 'express';
 import { BadRequest, DAY } from '../context.js';
+import { dryness, parseDropRates, parseRarity } from '../droprates.js';
+
+const DROP_TABLE_MAX_AGE = 30 * DAY;
+const RETRY_AFTER = 60 * 60 * 1000;
 
 export function dropsRoutes(ctx) {
   const r = Router();
@@ -124,11 +128,61 @@ export function dropsRoutes(ctx) {
     markObtained(key, db.prepare('SELECT * FROM clog_items WHERE id = ?').get(lastInsertRowid));
   }
 
-  r.get('/collection-log', (req, res) => {
+  // Drop rates from each source's wiki page, cached for 30 days. Returns lower-case source -> { item: rate } or null.
+  const failed = new Map();
+  async function dropTables(sources) {
+    const cached = () => new Map(db.prepare('SELECT source, data, fetched_at FROM drop_tables').all().map((t) => [t.source, t]));
+    let rows = cached();
+    const todo = [...new Set(sources.filter(Boolean))].filter((s) => {
+      const row = rows.get(s.toLowerCase());
+      return (!row || now() - row.fetched_at > DROP_TABLE_MAX_AGE) && !(now() - (failed.get(s.toLowerCase()) ?? -Infinity) < RETRY_AFTER);
+    });
+    if (todo.length) {
+      try {
+        const pages = await upstream.wikiPages(todo);
+        const save = db.prepare('INSERT INTO drop_tables (source, data, fetched_at) VALUES (?, ?, ?) ON CONFLICT(source) DO UPDATE SET data = excluded.data, fetched_at = excluded.fetched_at');
+        for (const s of todo) save.run(s.toLowerCase(), pages[s] ? JSON.stringify(parseDropRates(pages[s])) : null, now());
+        rows = cached();
+      } catch (err) {
+        // Best-effort: show what's cached, and try again later.
+        for (const s of todo) failed.set(s.toLowerCase(), now());
+        console.warn(`Drop rates: ${err.message}`);
+      }
+    }
+    return new Map([...rows].map(([s, row]) => [s, row.data ? JSON.parse(row.data) : null]));
+  }
+
+  // Kill count for a collection log source, from the hiscores or Dink, trying a few common name forms.
+  function killCounts(key) {
+    const kc = {};
+    for (const a of ctx.latestSnapshot(key)?.activities || []) kc[a.name.toLowerCase()] = a.score;
+    for (const b of db.prepare('SELECT boss, count FROM boss_records WHERE player = ?').all(key)) {
+      if (b.count != null && b.count > (kc[b.boss.toLowerCase()] ?? -1)) kc[b.boss.toLowerCase()] = b.count;
+    }
+    return (source) => {
+      const s = source.toLowerCase();
+      const found = [s, `the ${s}`, `${s} chests`].map((n) => kc[n]).filter((n) => n != null);
+      return found.length ? Math.max(...found) : null;
+    };
+  }
+
+  r.get('/collection-log', async (req, res) => {
     const { key } = ctx.requireAccount();
-    const items = db.prepare('SELECT * FROM clog_items WHERE player = ? ORDER BY source, item_name').all(key).map((i) => ({
-      id: i.id, itemId: i.item_id, itemName: i.item_name, icon: i.icon, source: i.source, obtainedAt: i.obtained_at,
-    }));
+    const rows = db.prepare('SELECT * FROM clog_items WHERE player = ? ORDER BY source, item_name').all(key);
+    const tables = await dropTables(rows.filter((i) => !i.obtained_at).map((i) => i.source));
+    const kcFor = killCounts(key);
+    const items = rows.map((i) => {
+      const wikiRate = tables.get(i.source.toLowerCase())?.[i.item_name.toLowerCase()] ?? null;
+      const rate = i.rate_override ?? wikiRate;
+      const tracked = i.source ? kcFor(i.source) : null;
+      const kc = i.kc_override ?? tracked;
+      return {
+        id: i.id, itemId: i.item_id, itemName: i.item_name, icon: i.icon, source: i.source, obtainedAt: i.obtained_at,
+        rate, rateFrom: i.rate_override != null ? 'manual' : wikiRate != null ? 'wiki' : null,
+        kc, kcFrom: i.kc_override != null ? 'manual' : tracked != null ? 'tracked' : null,
+        dry: i.obtained_at ? null : dryness(kc, rate),
+      };
+    });
     const latest = ctx.latestSnapshot(key);
     const logged = latest?.activities.find((a) => a.name === 'Collections Logged')?.score ?? null;
     // Dink reports the exact slot count with each new item, which is fresher than the hiscores.
@@ -151,6 +205,18 @@ export function dropsRoutes(ctx) {
     const { key } = ctx.requireAccount();
     const item = db.prepare('SELECT * FROM clog_items WHERE id = ? AND player = ?').get(Number(req.params.id), key);
     if (!item) return res.status(404).json({ error: 'Item not found.' });
+    // Your own drop rate and kill count, for sources the wiki or hiscores don't cover. Blank clears them.
+    if ('rate' in req.body) {
+      const rate = req.body.rate === '' || req.body.rate == null ? null : parseRarity(req.body.rate);
+      if (rate == null && req.body.rate) throw new BadRequest('Enter a drop rate like 1/512.');
+      db.prepare('UPDATE clog_items SET rate_override = ? WHERE id = ?').run(rate, item.id);
+    }
+    if ('kc' in req.body) {
+      const kc = req.body.kc === '' || req.body.kc == null ? null : Number(req.body.kc);
+      if (kc != null && !(Number.isInteger(kc) && kc >= 0 && kc <= 1e7)) throw new BadRequest('Kill count must be a whole number.');
+      db.prepare('UPDATE clog_items SET kc_override = ? WHERE id = ?').run(kc, item.id);
+    }
+    if (!('obtained' in req.body)) return res.json({ ok: true });
     if (req.body.obtained && !item.obtained_at) markObtained(key, item);
     if (!req.body.obtained && item.obtained_at) {
       db.prepare('UPDATE clog_items SET obtained_at = NULL WHERE id = ?').run(item.id);

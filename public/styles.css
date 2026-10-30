@@ -358,7 +358,12 @@ a.plain:hover { color: var(--accent); }
 .picker.picked .picker-input { border-color: var(--success); }
 .clog-groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: var(--space-4); align-items: start; }
 .clog-items { list-style: none; margin: 0; padding: 0; }
-.clog-items li { display: flex; align-items: center; gap: var(--space-2); padding: 6px 0; border-bottom: 1px solid var(--border); }
+.clog-items li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); padding: 6px 0; border-bottom: 1px solid var(--border); }
+.clog-dry { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding-left: 26px; }
+.clog-edit { flex-basis: 100%; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-2) var(--space-3); padding: var(--space-2) 0 var(--space-1) 26px; }
+.clog-edit .row, .clog-edit .hint { grid-column: 1 / -1; }
+.tag-warn { color: var(--warning); border-color: color-mix(in srgb, var(--warning) 45%, transparent); }
+.tag-danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
 .clog-items li:last-child { border-bottom: 0; }
 .clog-check { display: flex; align-items: center; gap: var(--space-2); flex: 1; min-width: 0; cursor: pointer; }
 .clog-check input, .checklist input { width: 18px; height: 18px; min-height: 0; flex: none; accent-color: var(--success); }

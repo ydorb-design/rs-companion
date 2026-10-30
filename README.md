@@ -20,7 +20,7 @@ A self-hosted Old School RuneScape companion you run in Docker and open in a bro
 - **Slayer**: current task with a kill counter, points and task history
 - **Boss notes**: gear, inventory and strategy per boss, next to your kill count, drops and collection log list for it
 - **Supplies**: stockpile counts with targets and low-stock warnings
-- **Drops and collection log**: log drops with their GE value; keep a list of collection log items you're chasing, ticked off automatically when you log the drop
+- **Drops and collection log**: log drops with their GE value; keep a list of collection log items you're chasing, ticked off automatically when you log the drop; see how dry you are on each one, from the wiki's drop rate and your kill count
 - **Daily and weekly checklist**: your own recurring jobs, reset at the game's daily (00:00 UTC) and weekly (Wednesday 00:00 UTC) reset
 - **Multiple accounts**, optional **password login**, **backup and restore**, **light and dark themes**, and it can be **installed to your phone's home screen**
 

@@ -157,15 +157,30 @@ CREATE TABLE IF NOT EXISTS guide_progress (
   done_at INTEGER NOT NULL,
   PRIMARY KEY (player, step_id)
 );
+CREATE TABLE IF NOT EXISTS drop_tables (
+  source TEXT PRIMARY KEY,
+  data TEXT,
+  fetched_at INTEGER NOT NULL
+);
 CREATE TABLE IF NOT EXISTS watchlist (
   item_id INTEGER PRIMARY KEY,
   added_at INTEGER NOT NULL
 );
 `;
 
+// Columns added after a table was first released. CREATE TABLE IF NOT EXISTS won't add them to existing databases.
+const ADDED_COLUMNS = [
+  ['clog_items', 'rate_override', 'REAL'],
+  ['clog_items', 'kc_override', 'INTEGER'],
+];
+
 export function openDb(file) {
   const db = new DatabaseSync(file);
   db.exec('PRAGMA journal_mode = WAL;');
   db.exec(SCHEMA);
+  for (const [table, column, type] of ADDED_COLUMNS) {
+    const has = db.prepare(`PRAGMA table_info(${table})`).all().some((c) => c.name === column);
+    if (!has) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
+  }
   return db;
 }
