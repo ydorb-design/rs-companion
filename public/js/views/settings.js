@@ -62,6 +62,7 @@ export async function renderSettings({ reload }) {
           <li>In RuneLite, install <b>Dink</b> from the Plugin Hub.</li>
           <li>In Dink's settings, under <b>Webhook Overrides</b>, paste this address into <b>Primary Webhook URLs</b>. If you already have a Discord webhook there, put this on a new line so both get messages.</li>
           <li>Turn on the notifiers you want: Loot, Collection Log, Slayer, Kill Count, Quests, Achievement Diary, Combat Tasks, Clue Scrolls, Pet, Levels.</li>
+          <li>For automatic sessions, also turn on Dink's <b>login and logout</b> notifications.</li>
           <li>For every kill count and personal best, set <b>Kill Count Interval</b> to 1. <b>Min Loot value</b> decides which drops get logged.</li>
           <li>In game, turn on <b>Settings &gt; All Settings &gt; Chat &gt; Collection log - New addition notification</b>, or Dink can't see new slots.</li>
         </ol>
@@ -70,6 +71,8 @@ export async function renderSettings({ reload }) {
           <button class="btn" type="button" id="dink-copy">Copy</button>
         </div>
         <p class="hint" style="margin-top:8px">Keep this address private: anyone with it can add data to your app. Use the address you open the app with on the PC that runs RuneLite. <button class="link-btn" type="button" id="dink-reset">Make a new address</button></p>
+        <label class="check-inline" style="margin-top:16px"><input type="checkbox" id="auto-sessions" ${s.autoSessions ? 'checked' : ''}>
+          Start a session when I log in and end it when I log out</label>
         <h3 class="sub-head" style="margin-top:16px">Recent messages</h3>
         <ul class="dink-log small" id="dink-log"><li class="muted">Loading…</li></ul>
       </section>
@@ -154,6 +157,11 @@ export async function renderSettings({ reload }) {
     await api('/notifications/test', { method: 'POST' });
   }, 'Test alert sent'));
   loadDink();
+  const auto = document.getElementById('auto-sessions');
+  auto.addEventListener('change', async () => {
+    if (!(await busy(auto, () => api('/settings', { method: 'PUT', body: { autoSessions: auto.checked } }), auto.checked ? 'Automatic sessions on' : 'Automatic sessions off'))) auto.checked = !auto.checked;
+    else await reload();
+  });
   document.getElementById('dink-copy').addEventListener('click', async () => {
     const input = document.getElementById('dink-url');
     try {

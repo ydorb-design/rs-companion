@@ -75,6 +75,7 @@ async function renderBoss(name) {
         </form>
 
         <div class="stack">
+          <section class="card" id="odds"><div class="card-head"><h2>Rare drop odds</h2></div><p class="muted small">Loading…</p></section>
           <section class="card">
             <div class="card-head"><h2>Collection log</h2><a class="btn btn-sm" href="#/collection">Manage</a></div>
             ${b.collectionLog.length ? `<ul class="clog-items">${b.collectionLog.map((c) => `<li class="${c.obtainedAt ? 'got' : ''}">
@@ -93,6 +94,7 @@ async function renderBoss(name) {
       </div>
     </div></div>`;
 
+  loadOdds(b.name);
   const form = document.getElementById('notes-form');
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -112,4 +114,30 @@ function pbTime(seconds) {
   const frac = seconds % 1;
   const sec = (seconds % 60).toFixed(frac ? 1 : 0).padStart(frac ? 4 : 2, '0');
   return h ? `${h}:${String(m).padStart(2, '0')}:${sec}` : `${m}:${sec}`;
+}
+
+const oneIn = (rate) => `1/${fmt(Math.round(1 / rate))}`;
+
+async function loadOdds(name) {
+  const el = document.getElementById('odds');
+  let d;
+  try {
+    d = await api(`/bosses/${encodeURIComponent(name)}/odds`);
+  } catch (err) {
+    if (el?.isConnected) el.innerHTML = `<div class="card-head"><h2>Rare drop odds</h2></div><p class="small neg">${esc(err.message)}</p>`;
+    return;
+  }
+  if (!el?.isConnected) return;
+  const head = `<div class="card-head"><h2>Rare drop odds</h2>${d.kc != null ? `<span class="muted small">At ${fmt(d.kc)} kills</span>` : ''}</div>`;
+  if (!d.found || !d.items.length) {
+    el.innerHTML = `${head}<p class="muted small">${d.found ? 'No drops rarer than 1/100 on the wiki page.' : `Couldn't read a drop table from the wiki page for ${esc(name)}. Raids and minigames often use a different layout.`}</p>`;
+    return;
+  }
+  el.innerHTML = `${head}
+    <ul class="odds">${d.items.map((i) => `<li class="${i.obtained ? 'got' : ''}">
+      <span class="item">${img(itemIcon(i.icon))}<span>${esc(i.itemName)}${i.pet ? ' <span class="tag">Pet</span>' : ''}</span></span>
+      <span class="muted small num">${oneIn(i.rate)}</span>
+      <span class="odds-chance num">${i.obtained ? '<span class="pos">Got it</span>' : i.chance != null ? `<b class="${i.ratio > 2 ? 'neg' : i.ratio > 1 ? 'warn' : ''}">${(i.chance * 100).toFixed(i.chance < 0.1 ? 1 : 0)}%</b>` : '–'}</span>
+    </li>`).join('')}</ul>
+    <p class="hint" style="margin-top:12px">Your chance of at least one by now, from the OSRS Wiki drop rate and your kill count. Amber means you're past the drop rate, red means more than twice past it.${d.kc == null ? ' Add your kill count by getting ranked on the hiscores or with Dink.' : ''}</p>`;
 }

@@ -18,6 +18,7 @@ import { renderGuides } from './views/guide.js';
 import { renderSessions } from './views/sessions.js';
 import { renderCompare } from './views/compare.js';
 import { renderCalc } from './views/calc.js';
+import { bindSearchBox, renderSearch } from './views/search.js';
 
 async function loadSettings() {
   state.settings = await api('/settings');
@@ -79,6 +80,7 @@ const ROUTES = {
   sessions: renderSessions,
   compare: renderCompare,
   calc: renderCalc,
+  search: renderSearch,
   goals: renderGoals,
   quests: renderQuests,
   timers: renderTimers,
@@ -94,7 +96,10 @@ async function route() {
   const render = ROUTES[name] || renderOverview;
   const navName = name === 'skill' ? 'overview' : name;
   document.querySelectorAll('.nav a').forEach((a) => {
-    if (a.dataset.route === navName) a.setAttribute('aria-current', 'page');
+    if (a.dataset.route === navName) {
+      a.setAttribute('aria-current', 'page');
+      a.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }
     else a.removeAttribute('aria-current');
   });
   try {
@@ -111,6 +116,7 @@ window.addEventListener('hashchange', () => {
   window.scrollTo(0, 0);
 });
 route();
+bindSearchBox();
 
 // Block pinch zoom. iOS Safari ignores user-scalable=no in the viewport tag, so stop the gestures directly.
 document.addEventListener('gesturestart', (e) => e.preventDefault());

@@ -181,6 +181,7 @@ CREATE TABLE IF NOT EXISTS watchlist (
 const ADDED_COLUMNS = [
   ['clog_items', 'rate_override', 'REAL'],
   ['clog_items', 'kc_override', 'INTEGER'],
+  ['sessions', 'auto', 'INTEGER'],
 ];
 
 export function openDb(file) {
