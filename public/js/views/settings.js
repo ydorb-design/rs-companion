@@ -62,7 +62,7 @@ export async function renderSettings({ reload }) {
           <li>In RuneLite, install <b>Dink</b> from the Plugin Hub.</li>
           <li>In Dink's settings, under <b>Webhook Overrides</b>, paste this address into <b>Primary Webhook URLs</b>. If you already have a Discord webhook there, put this on a new line so both get messages.</li>
           <li>Turn on the notifiers you want: Loot, Collection Log, Slayer, Kill Count, Quests, Achievement Diary, Combat Tasks, Clue Scrolls, Pet, Levels.</li>
-          <li>For automatic sessions, also turn on Dink's <b>login and logout</b> notifications.</li>
+          <li>For automatic sessions, expand <b>Advanced</b> in Dink's settings and paste the same address into <b>Custom Metadata Handler</b>. Dink sends your login and logout there.</li>
           <li>For every kill count and personal best, set <b>Kill Count Interval</b> to 1. <b>Min Loot value</b> decides which drops get logged.</li>
           <li>In game, turn on <b>Settings &gt; All Settings &gt; Chat &gt; Collection log - New addition notification</b>, or Dink can't see new slots.</li>
         </ol>

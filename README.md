@@ -114,7 +114,7 @@ After that it syncs automatically on the refresh interval. Anything you change b
 
 Install the [Dink](https://github.com/pajlads/DinkPlugin) plugin from the RuneLite Plugin Hub and point it at the app, and drops, collection log slots, Slayer tasks, kill counts and personal bests, quests, diaries, combat tasks, clues, pets and level-ups arrive as you play.
 
-Turn on Dink's login and logout notifications too, and sessions start when you log in and end when you log out. The login message also updates your Slayer points, quest points, collection log count, combat task points and pets. A session's end numbers come from the hiscores about 3 minutes after you log out, so they've caught up. You can turn automatic sessions off in **Settings > RuneLite (Dink)**.
+For automatic sessions, expand **Advanced** in Dink's settings and paste the same address into **Custom Metadata Handler**. Dink sends your login and logout there, so sessions start when you log in and end when you log out. The login message also updates your Slayer points, quest points, collection log count, combat task points and pets. A session's end numbers come from the hiscores about 3 minutes after you log out, so they've caught up. You can turn automatic sessions off in **Settings > RuneLite (Dink)**.
 
 The app's address for Dink, and step-by-step setup, are in **Settings > RuneLite (Dink)**. The address contains a secret, so keep it private; you can make a new one there if it leaks. Recent messages are listed under it to help check the setup.
 
