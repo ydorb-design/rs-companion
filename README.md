@@ -20,8 +20,11 @@ A self-hosted Old School RuneScape companion you run in Docker and open in a bro
 - **Slayer**: current task with a kill counter, points and task history
 - **Boss notes**: gear, inventory and strategy per boss, next to your kill count, drops and collection log list for it
 - **Supplies**: stockpile counts with targets and low-stock warnings
+- **Loot by source**: GP per kill and per hour for each boss you've logged drops from
+- **Rare drop odds**: on each boss page, your chance of having had each rare drop and pet by now, from the wiki drop rate and your kill count
+- **Search** across quests, bosses, skills, guides, items, tasks and your lists (press `/` on desktop)
 - **Drops and collection log**: log drops with their GE value; keep a list of collection log items you're chasing, ticked off automatically when you log the drop; see how dry you are on each one, from the wiki's drop rate and your kill count
-- **Sessions**: start a session when you log in and end it when you stop, to see the XP and XP per hour, kill counts and loot from that sitting, with a history of past sessions
+- **Sessions**: start a session when you log in and end it when you stop, to see the XP and XP per hour, kill counts and loot from that sitting, with a history of past sessions. With Dink, sessions start and end on their own when you log in and out
 - **Compare**: line your skills, kill counts and clues up against any player on the hiscores, and save friends to compare with in one tap
 - **Calculators**: combat level, with how many levels you need in each stat for the next one, and XP to a target level with actions and hours left
 - **Daily and weekly checklist**: your own recurring jobs, reset at the game's daily (00:00 UTC) and weekly (Wednesday 00:00 UTC) reset
@@ -110,6 +113,8 @@ After that it syncs automatically on the refresh interval. Anything you change b
 ## RuneLite (Dink)
 
 Install the [Dink](https://github.com/pajlads/DinkPlugin) plugin from the RuneLite Plugin Hub and point it at the app, and drops, collection log slots, Slayer tasks, kill counts and personal bests, quests, diaries, combat tasks, clues, pets and level-ups arrive as you play.
+
+Turn on Dink's login and logout notifications too, and sessions start when you log in and end when you log out. The login message also updates your Slayer points, quest points, collection log count, combat task points and pets. A session's end numbers come from the hiscores about 3 minutes after you log out, so they've caught up. You can turn automatic sessions off in **Settings > RuneLite (Dink)**.
 
 The app's address for Dink, and step-by-step setup, are in **Settings > RuneLite (Dink)**. The address contains a secret, so keep it private; you can make a new one there if it leaks. Recent messages are listed under it to help check the setup.
 

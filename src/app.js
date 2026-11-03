@@ -24,6 +24,7 @@ import { dinkRoutes } from './routes/dink.js';
 import { guideRoutes } from './routes/guide.js';
 import { sessionsRoutes } from './routes/sessions.js';
 import { compareRoutes } from './routes/compare.js';
+import { searchRoutes } from './routes/search.js';
 
 const PUBLIC_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 
@@ -45,7 +46,9 @@ export function createApp({ db, upstream, now = () => Date.now(), password = '',
   });
   app.get('/api/health', (req, res) => res.json({ ok: true }));
   const drops = dropsRoutes(ctx);
-  const dink = dinkRoutes(ctx, { drops });
+  // Sessions need stats refreshes, which are set up below; Dink only calls them after startup.
+  let sessions;
+  const dink = dinkRoutes(ctx, { drops, sessions: { dinkLogin: (...a) => sessions.dinkLogin(...a), dinkLogout: (...a) => sessions.dinkLogout(...a) } });
   // Dink can't sign in, so its endpoint sits before the login check and uses a secret token instead.
   app.post('/api/dink/:token', dink.receive);
   // Small body limit before sign-in; backups can be large, so allow more once signed in.
@@ -72,6 +75,7 @@ export function createApp({ db, upstream, now = () => Date.now(), password = '',
   const stats = statsRoutes(ctx, { onRefreshed });
   const progress = progressRoutes(ctx);
   const timers = timersRoutes(ctx);
+  sessions = sessionsRoutes(ctx, { refreshStats: stats.refreshStats, killCount: drops.killCounts });
   let onSettingsChange = () => {};
 
   app.use('/api', settingsRoutes(ctx, { onChange: () => onSettingsChange() }));
@@ -90,8 +94,9 @@ export function createApp({ db, upstream, now = () => Date.now(), password = '',
   app.use('/api', bossesRoutes(ctx));
   app.use('/api', dink.router);
   app.use('/api', guideRoutes(ctx));
-  app.use('/api', sessionsRoutes(ctx, { refreshStats: stats.refreshStats }));
+  app.use('/api', sessions.router);
   app.use('/api', compareRoutes(ctx));
+  app.use('/api', searchRoutes(ctx));
 
   app.use('/api', (req, res) => res.status(404).json({ error: 'Not found.' }));
   app.use(express.static(PUBLIC_DIR));
@@ -108,7 +113,7 @@ export function createApp({ db, upstream, now = () => Date.now(), password = '',
   app.jobs = {
     async refreshAll() {
       for (const account of ctx.allAccounts()) {
-        for (const job of [stats.refreshStats, progress.syncProgress]) {
+        for (const job of [stats.refreshStats, progress.syncProgress, sessions.finishPending]) {
           try {
             await job(account);
           } catch (err) {
@@ -116,6 +121,9 @@ export function createApp({ db, upstream, now = () => Date.now(), password = '',
           }
         }
       }
+    },
+    finishSessions() {
+      return Promise.all(ctx.allAccounts().map((a) => sessions.finishPending(a)));
     },
     checkTimers() {
       const due = timers.collectDue();

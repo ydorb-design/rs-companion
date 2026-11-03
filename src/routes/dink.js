@@ -45,7 +45,7 @@ function readMultipart(req) {
   });
 }
 
-export function dinkRoutes(ctx, { drops }) {
+export function dinkRoutes(ctx, { drops, sessions }) {
   const { db, now } = ctx;
   const jsonParser = express.json({ limit: '2mb' });
 
@@ -88,6 +88,24 @@ export function dinkRoutes(ctx, { drops }) {
   }
 
   const handlers = {
+    // Login carries totals that the app otherwise only learns bit by bit.
+    LOGIN(key, x, account) {
+      const save = {};
+      if (x.slayer?.points != null) save[`slayerPoints:${key}`] = x.slayer.points;
+      if (x.questPoints?.completed != null) save[`questPoints:${key}`] = x.questPoints.completed;
+      if (x.collectionLog?.completed != null) save[`clogCount:${key}`] = { completed: x.collectionLog.completed, total: x.collectionLog.total ?? null, at: now() };
+      if (x.combatAchievementPoints?.completed != null) {
+        save[`caPoints:${key}`] = { total: x.combatAchievementPoints.completed, possible: x.combatAchievementPoints.total ?? null, at: now() };
+      }
+      if (Array.isArray(x.pets)) save[`pets:${key}`] = x.pets.map((p) => String(p?.name || '')).filter(Boolean).slice(0, 200);
+      ctx.saveSettings(save);
+      return sessions.dinkLogin(account, x);
+    },
+
+    LOGOUT(key, x, account) {
+      return sessions.dinkLogout(account);
+    },
+
     async LOOT(key, x) {
       const items = (x.items || []).filter((i) => i && i.name && i.quantity > 0);
       if (!items.length) return 'no items';
@@ -264,7 +282,7 @@ export function dinkRoutes(ctx, { drops }) {
       return res.status(202).json({ ok: true, ignored: 'type' });
     }
     try {
-      log(name, type, await handler(account.key, payload.extra || {}));
+      log(name, type, await handler(account.key, payload.extra || {}, account));
     } catch (err) {
       console.warn(`Dink ${type}: ${err.message}`);
       log(name, type, `error: ${err.message}`);

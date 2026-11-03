@@ -4,7 +4,8 @@ import {
 
 const priceState = { q: '', results: [] };
 
-export async function renderPrices() {
+export async function renderPrices(param) {
+  if (param) priceState.q = param;
   view.innerHTML = `<div>
     <div class="page-head">
       <div><h1>Prices</h1><p class="muted small">Live Grand Exchange prices from the OSRS Wiki. Useful for judging drop value and what's worth alching.</p></div>

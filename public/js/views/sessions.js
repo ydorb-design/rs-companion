@@ -4,7 +4,7 @@ import {
 
 export async function renderSessions() {
   if (!state.settings.active) return (view.innerHTML = needsAccount());
-  const { active, history, totals } = await api('/sessions');
+  const { active, history, totals, auto } = await api('/sessions');
 
   view.innerHTML = `<div>
     <div class="page-head">
@@ -19,7 +19,8 @@ export async function renderSessions() {
               <input name="note" maxlength="120" placeholder="e.g. Vorkath, or 70-80 Agility at Seers'"></label>
             <button class="btn btn-primary" type="submit">Start session</button>
           </div>
-          <p class="hint" style="margin-top:12px">Your stats are read from the hiscores at the start and end. The hiscores can lag behind the game by a minute or two, so end the session after you log out.</p>
+          <p class="hint" style="margin-top:12px">Your stats are read from the hiscores at the start and end. The hiscores can lag behind the game by a minute or two, so end the session after you log out.
+            ${auto ? 'With Dink set up, sessions also start and end on their own when you log in and out.' : '<a href="#/settings">Turn on automatic sessions</a> to have Dink start and end them for you.'}</p>
         </form>`}
 
       ${history.length ? `
@@ -75,7 +76,7 @@ function activeCard(s) {
   return `<section class="card session-live">
     <div class="card-head">
       <div>
-        <h2>Session running</h2>
+        <h2>Session running ${s.auto ? '<span class="tag">Auto</span>' : ''}</h2>
         <p class="muted small">${s.note ? `${esc(s.note)} · ` : ''}Started ${new Date(s.startedAt).toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' })}${s.statsAt ? ` · Stats from ${ago(s.statsAt)}` : ''}</p>
       </div>
       <div class="row">
@@ -100,7 +101,7 @@ function pastSession(s) {
     <summary>
       <span class="session-when"><b>${date.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })}</b>
         <span class="muted small">${date.toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' })} · ${duration(s.hours * 3600000)}</span></span>
-      <span class="session-what">${s.note ? esc(s.note) : top.length ? `<span class="muted">${esc(top.join(', '))}</span>` : '<span class="muted">No changes recorded</span>'}</span>
+      <span class="session-what">${s.pending ? '<span class="tag tag-warn">Waiting for hiscores</span> ' : ''}${s.note ? esc(s.note) : top.length ? `<span class="muted">${esc(top.join(', '))}</span>` : '<span class="muted">No changes recorded</span>'}</span>
       <span class="session-nums num small"><span>${short(s.xp)} XP</span>${s.lootValue ? `<span>${short(s.lootValue)} gp</span>` : ''}</span>
     </summary>
     <div class="session-body">
@@ -141,5 +142,6 @@ function sessionDetail(s) {
       ? 'Nothing gained yet. Press Update stats after you\'ve played for a bit, or log drops on the Drops page (Dink logs them for you).'
       : 'No XP, kills or drops were recorded in this session.'}</p>`;
   }
-  return `<div class="session-tables">${parts.join('')}</div>`;
+  const pending = s.pending ? '<p class="hint" style="margin-top:12px">Ended when you logged out. The final numbers come from the hiscores a few minutes later.</p>' : '';
+  return `${pending}<div class="session-tables">${parts.join('')}</div>`;
 }

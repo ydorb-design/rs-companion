@@ -33,6 +33,8 @@ export async function renderDrops() {
         <div class="form-actions"><button class="btn btn-primary" type="submit">Log drop</button></div>
       </form>
 
+      <section class="card" id="by-source"></section>
+
       <section class="card">
         <div class="card-head"><h2>Recent drops</h2></div>
         ${d.drops.length ? `<div class="table-wrap"><table>
@@ -50,6 +52,7 @@ export async function renderDrops() {
       </section>
     </div></div>`;
 
+  loadBySource();
   const form = document.getElementById('drop-form');
   const picker = bindItemPicker(form.querySelector('.picker'));
   form.addEventListener('submit', async (e) => {
@@ -66,4 +69,26 @@ export async function renderDrops() {
     if (!confirm('Delete this drop?')) return;
     if (await busy(b, () => api(`/drops/${b.dataset.delete}`, { method: 'DELETE' }))) renderDrops();
   }));
+}
+
+// GP per kill and per hour for each source you've logged drops from.
+async function loadBySource() {
+  const el = document.getElementById('by-source');
+  const rows = await api('/loot/sources').catch(() => null);
+  if (!el?.isConnected) return;
+  if (!rows?.length) return el.remove();
+  el.innerHTML = `
+    <div class="card-head"><h2>Loot by source</h2></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>From</th><th class="r">Drops</th><th class="r">Value</th><th class="r">Kills</th><th class="r">Per kill</th><th class="r">Per hour</th></tr></thead>
+      <tbody>${rows.map((r) => `<tr>
+        <td><a class="plain" href="#/bosses/${encodeURIComponent(r.source)}">${esc(r.source)}</a></td>
+        <td class="r">${fmt(r.drops)}</td>
+        <td class="r">${short(r.value)}</td>
+        <td class="r">${r.kills != null ? fmt(r.kills) : '<span class="muted">–</span>'}</td>
+        <td class="r">${r.perKill != null ? short(r.perKill) : '<span class="muted">–</span>'}</td>
+        <td class="r" ${r.sessions ? `title="From ${r.sessions} session${r.sessions === 1 ? '' : 's'}, ${r.killsPerHour.toFixed(1)} kills an hour"` : ''}>${r.perHour != null ? short(r.perHour) : '<span class="muted">–</span>'}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>
+    <p class="hint" style="margin-top:12px">Kills count from just before your first logged drop, using your hiscores history. Per hour uses sessions where that was the only boss you killed. Only logged drops count, so it reads low if Dink's Min Loot value is high.</p>`;
 }

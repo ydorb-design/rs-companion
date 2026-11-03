@@ -5,6 +5,8 @@ import { dryness, parseDropRates, parseRarity } from '../droprates.js';
 
 const DROP_TABLE_MAX_AGE = 30 * DAY;
 const RETRY_AFTER = 60 * 60 * 1000;
+// Drops at 1 in 100 or rarer count as rare for the odds list.
+const RARE_RATE = 1 / 100;
 
 export function dropsRoutes(ctx) {
   const r = Router();
@@ -225,6 +227,36 @@ export function dropsRoutes(ctx) {
     res.json({ ok: true });
   });
 
+  // Odds of having had each rare drop (and pet) by now, from the wiki drop table and your kill count.
+  r.get('/bosses/:name/odds', async (req, res) => {
+    const { key } = ctx.requireAccount();
+    const name = String(req.params.name).trim().slice(0, 60);
+    const table = (await dropTables([name])).get(name.toLowerCase());
+    const kc = killCounts(key)(name);
+    if (!table) return res.json({ kc, found: false, items: [] });
+    const mapping = await upstream.itemMapping().catch(() => []);
+    const byName = new Map(mapping.map((i) => [i.name.toLowerCase(), i]));
+    // Pets you have, as Dink reports them at login.
+    const pets = new Set((ctx.getSettings()[`pets:${key}`] || []).map((p) => p.toLowerCase()));
+    const have = new Set([
+      ...db.prepare('SELECT lower(item_name) AS n FROM clog_items WHERE player = ? AND obtained_at IS NOT NULL').all(key).map((x) => x.n),
+      ...db.prepare('SELECT lower(item_name) AS n FROM drops WHERE player = ?').all(key).map((x) => x.n),
+      ...pets,
+    ]);
+    const items = Object.entries(table)
+      .filter(([, rate]) => rate <= RARE_RATE)
+      .map(([lower, rate]) => {
+        const item = byName.get(lower);
+        const itemName = item?.name ?? lower[0].toUpperCase() + lower.slice(1);
+        return {
+          itemName, icon: item?.icon ?? `${itemName}.png`, rate, pet: lower.startsWith('pet ') || pets.has(lower),
+          obtained: have.has(lower), ...(dryness(kc, rate) || { chance: null, expected: 1 / rate, ratio: null }),
+        };
+      })
+      .sort((a, b) => Number(b.pet) - Number(a.pet) || a.rate - b.rate);
+    res.json({ kc, found: true, items });
+  });
+
   r.delete('/collection-log/:id', (req, res) => {
     const { key } = ctx.requireAccount();
     db.prepare('DELETE FROM clog_items WHERE id = ? AND player = ?').run(Number(req.params.id), key);
@@ -232,5 +264,5 @@ export function dropsRoutes(ctx) {
     res.json({ ok: true });
   });
 
-  return { router: r, recordDrop, obtainCollectionItem };
+  return { router: r, recordDrop, obtainCollectionItem, killCounts };
 }

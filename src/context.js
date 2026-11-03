@@ -20,6 +20,7 @@ const DEFAULT_SETTINGS = {
   alertLevels: true,
   alertGoals: true,
   alertTimers: true,
+  autoSessions: true,
 };
 
 export function createContext({ db, upstream, now = () => Date.now(), notify }) {

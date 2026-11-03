@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { ACCOUNT_TYPES } from '../upstream.js';
 import { BadRequest, playerKey } from '../context.js';
 
-const BOOL_KEYS = ['alertLevels', 'alertGoals', 'alertTimers'];
+const BOOL_KEYS = ['alertLevels', 'alertGoals', 'alertTimers', 'autoSessions'];
 
 export function settingsRoutes(ctx, { onChange }) {
   const r = Router();
@@ -18,6 +18,7 @@ export function settingsRoutes(ctx, { onChange }) {
       alertLevels: s.alertLevels,
       alertGoals: s.alertGoals,
       alertTimers: s.alertTimers,
+      autoSessions: s.autoSessions,
       accountTypes: ACCOUNT_TYPES,
     };
   }

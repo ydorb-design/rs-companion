@@ -35,7 +35,8 @@ function requirementLine(q) {
   return '';
 }
 
-export async function renderQuests() {
+export async function renderQuests(param) {
+  if (param) { ui.q = param; ui.filter = 'all'; }
   if (!state.settings.active) return (view.innerHTML = needsAccount());
   const p = await api('/progress');
   questPointsKnown = p.questPoints;
