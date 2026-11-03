@@ -15,6 +15,9 @@ import { renderCollection } from './views/collection.js';
 import { renderSupplies } from './views/supplies.js';
 import { renderBosses } from './views/bosses.js';
 import { renderGuides } from './views/guide.js';
+import { renderSessions } from './views/sessions.js';
+import { renderCompare } from './views/compare.js';
+import { renderCalc } from './views/calc.js';
 
 async function loadSettings() {
   state.settings = await api('/settings');
@@ -73,6 +76,9 @@ const ROUTES = {
   supplies: renderSupplies,
   bosses: renderBosses,
   guides: renderGuides,
+  sessions: renderSessions,
+  compare: renderCompare,
+  calc: renderCalc,
   goals: renderGoals,
   quests: renderQuests,
   timers: renderTimers,

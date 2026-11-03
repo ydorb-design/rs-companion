@@ -4,7 +4,7 @@ import { BadRequest } from '../context.js';
 
 const TABLES = [
   'snapshots', 'goals', 'tasks', 'timers', 'wikisync', 'quest_overrides', 'diary_overrides', 'events',
-  'slayer_tasks', 'drops', 'clog_items', 'checklist', 'watchlist', 'supplies', 'boss_notes', 'boss_records', 'guide_progress',
+  'slayer_tasks', 'drops', 'clog_items', 'checklist', 'watchlist', 'supplies', 'boss_notes', 'boss_records', 'guide_progress', 'sessions',
 ];
 // Never export credentials or the login signing secret; the quest route is a cache of a wiki page.
 const PRIVATE_SETTINGS = ['secret', 'discordWebhook', 'ntfyUrl', 'dinkToken', 'questRoute'];

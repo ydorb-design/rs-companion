@@ -2,18 +2,14 @@ import { Router } from 'express';
 import { DAY } from '../context.js';
 import { eventsFromSnapshots } from '../events.js';
 import { activityGroup } from '../activities.js';
+import { combatFromLevels } from '../../public/js/combat.js';
 
 const PERIODS = { day: DAY, week: 7 * DAY, month: 30 * DAY };
 
 export { activityGroup };
 
 export function combatLevel(skills) {
-  const lvl = (n) => skills.find((s) => s.name === n)?.level ?? 1;
-  const base = 0.25 * (lvl('Defence') + lvl('Hitpoints') + Math.floor(lvl('Prayer') / 2));
-  const melee = 0.325 * (lvl('Attack') + lvl('Strength'));
-  const range = 0.325 * Math.floor(lvl('Ranged') * 1.5);
-  const mage = 0.325 * Math.floor(lvl('Magic') * 1.5);
-  return Math.floor(base + Math.max(melee, range, mage));
+  return combatFromLevels(Object.fromEntries(skills.map((s) => [s.name, s.level])));
 }
 
 export function statsRoutes(ctx, { onRefreshed } = {}) {

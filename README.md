@@ -21,6 +21,9 @@ A self-hosted Old School RuneScape companion you run in Docker and open in a bro
 - **Boss notes**: gear, inventory and strategy per boss, next to your kill count, drops and collection log list for it
 - **Supplies**: stockpile counts with targets and low-stock warnings
 - **Drops and collection log**: log drops with their GE value; keep a list of collection log items you're chasing, ticked off automatically when you log the drop; see how dry you are on each one, from the wiki's drop rate and your kill count
+- **Sessions**: start a session when you log in and end it when you stop, to see the XP and XP per hour, kill counts and loot from that sitting, with a history of past sessions
+- **Compare**: line your skills, kill counts and clues up against any player on the hiscores, and save friends to compare with in one tap
+- **Calculators**: combat level, with how many levels you need in each stat for the next one, and XP to a target level with actions and hours left
 - **Daily and weekly checklist**: your own recurring jobs, reset at the game's daily (00:00 UTC) and weekly (Wednesday 00:00 UTC) reset
 - **Multiple accounts**, optional **password login**, **backup and restore**, **light and dark themes**, and it can be **installed to your phone's home screen**
 

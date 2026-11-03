@@ -162,6 +162,15 @@ CREATE TABLE IF NOT EXISTS drop_tables (
   data TEXT,
   fetched_at INTEGER NOT NULL
 );
+CREATE TABLE IF NOT EXISTS sessions (
+  id INTEGER PRIMARY KEY,
+  player TEXT NOT NULL,
+  started_at INTEGER NOT NULL,
+  ended_at INTEGER,
+  start_data TEXT NOT NULL,
+  end_data TEXT,
+  note TEXT NOT NULL DEFAULT ''
+);
 CREATE TABLE IF NOT EXISTS watchlist (
   item_id INTEGER PRIMARY KEY,
   added_at INTEGER NOT NULL
