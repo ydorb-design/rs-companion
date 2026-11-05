@@ -2,7 +2,7 @@
   "name": "osrs-companion",
   "version": "0.1.0",
   "private": true,
-  "description": "Self-hosted Old School RuneScape companion: stats, goals, quests, prices and tasks.",
+  "description": "Self-hosted Old School RuneScape companion: stats, goals, quests, drops and tasks.",
   "type": "module",
   "main": "src/server.js",
   "engines": {

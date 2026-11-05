@@ -23,7 +23,6 @@ import { bossesRoutes } from './routes/bosses.js';
 import { dinkRoutes } from './routes/dink.js';
 import { guideRoutes } from './routes/guide.js';
 import { sessionsRoutes } from './routes/sessions.js';
-import { compareRoutes } from './routes/compare.js';
 import { searchRoutes } from './routes/search.js';
 
 const PUBLIC_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
@@ -95,7 +94,6 @@ export function createApp({ db, upstream, now = () => Date.now(), password = '',
   app.use('/api', dink.router);
   app.use('/api', guideRoutes(ctx));
   app.use('/api', sessions.router);
-  app.use('/api', compareRoutes(ctx));
   app.use('/api', searchRoutes(ctx));
 
   app.use('/api', (req, res) => res.status(404).json({ error: 'Not found.' }));

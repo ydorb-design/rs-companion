@@ -467,20 +467,6 @@ textarea { font-size: var(--text-sm); line-height: 1.5; }
 .session-body { padding-bottom: var(--space-4); }
 .session-body .session-tables { margin-top: 0; }
 
-/* Compare */
-.friend-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-4); }
-.chip { display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: 999px; background: var(--surface-2); overflow: hidden; }
-.chip button { background: none; border: 0; color: inherit; font: inherit; font-size: var(--text-sm); cursor: pointer; min-height: 30px; }
-.chip-main { padding: 0 var(--space-2) 0 var(--space-3); }
-.chip-main:hover { color: var(--accent); }
-.chip-x { padding: 0 var(--space-2); color: var(--text-muted) !important; font-size: var(--text-xs) !important; }
-.chip-x:hover { color: var(--danger) !important; }
-.compare-fields { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto; }
-.vs { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: var(--space-3); align-items: center; }
-.vs-side .facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.compare-table td.win b { color: var(--accent-strong); }
-.compare-table .xp-short { display: none; }
-
 /* Calculators */
 .calc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(140px, 100%), 1fr)); gap: var(--space-3); }
 label.calc-skill { display: grid; grid-template-columns: 20px 1fr; align-items: center; gap: var(--space-1) var(--space-2); }
@@ -559,16 +545,8 @@ label.calc-skill { display: grid; grid-template-columns: 20px 1fr; align-items: 
   .board { grid-template-columns: 1fr; }
   #task-form .form-grid { grid-template-columns: 1fr !important; }
   .kpi-value { font-size: var(--text-xl); }
-  .vs { grid-template-columns: minmax(0, 1fr); }
-  .vs-mid { display: none; }
-  .compare-fields { grid-template-columns: minmax(0, 1fr) auto; }
-  .compare-fields .field:first-child { grid-column: 1 / -1; }
 }
 @media (max-width: 520px) {
-  .compare-table .xp-sub { display: none; }
-  .compare-table .xp-short { display: inline; }
-  .compare-table th, .compare-table td { padding-left: var(--space-2); padding-right: var(--space-2); }
-  .compare-table .item span { min-width: 0; }
   .session summary { grid-template-columns: minmax(0, 1fr) auto; }
   .session-what { grid-column: 1 / -1; grid-row: 2; }
 }

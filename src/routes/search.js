@@ -50,12 +50,6 @@ export function searchRoutes(ctx) {
       ...(g.steps || []).filter((st) => hit(st.title)).map((st) => ({ title: st.title, sub: g.name, href: `#/guides/${g.id}` })),
     ]));
 
-    try {
-      const items = (await ctx.upstream.itemMapping()).filter((i) => hit(i.name));
-      add('Items', items.map((i) => ({ title: i.name, sub: 'Grand Exchange', icon: i.icon, href: `#/prices/${encodeURIComponent(i.name)}` })));
-    } catch {
-      // Item search is a bonus; skip it if the wiki can't be reached.
-    }
     res.json(out);
   });
 

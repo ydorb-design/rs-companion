@@ -5,7 +5,6 @@ import { renderBossing } from './views/bossing.js';
 import { renderGoals } from './views/goals.js';
 import { renderQuests } from './views/quests.js';
 import { renderTimers } from './views/timers.js';
-import { renderPrices } from './views/prices.js';
 import { renderTasks } from './views/tasks.js';
 import { renderSettings } from './views/settings.js';
 import { renderActivity } from './views/activity.js';
@@ -16,7 +15,6 @@ import { renderSupplies } from './views/supplies.js';
 import { renderBosses } from './views/bosses.js';
 import { renderGuides } from './views/guide.js';
 import { renderSessions } from './views/sessions.js';
-import { renderCompare } from './views/compare.js';
 import { renderCalc } from './views/calc.js';
 import { bindSearchBox, renderSearch } from './views/search.js';
 
@@ -78,13 +76,11 @@ const ROUTES = {
   bosses: renderBosses,
   guides: renderGuides,
   sessions: renderSessions,
-  compare: renderCompare,
   calc: renderCalc,
   search: renderSearch,
   goals: renderGoals,
   quests: renderQuests,
   timers: renderTimers,
-  prices: renderPrices,
   tasks: renderTasks,
   settings: () => renderSettings({ reload: loadSettings }),
 };

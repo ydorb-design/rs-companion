@@ -116,24 +116,6 @@ test('play session records XP, kills and drops', async () => {
   assert.equal((await call('/sessions')).body.history.length, 0);
 });
 
-test('compare with another player and save friends', async () => {
-  assert.equal((await call('/compare?player=Iron%20Brody&accountType=ironman')).status, 400, 'not yourself');
-  assert.equal((await call('/compare?player=Nobody&accountType=main')).status, 404);
-  const c = (await call('/compare?player=Friend%20One&accountType=main')).body;
-  assert.equal(c.theirs.player, 'Friend One');
-  assert.equal(c.mine.player, 'Iron Brody');
-  assert.equal(c.theirs.skills.find((s) => s.name === 'Attack').level, 70);
-  assert.ok(c.theirs.activities.some((a) => a.name === 'Vorkath'));
-
-  assert.equal((await call('/friends', 'POST', { player: '' })).status, 400);
-  await call('/friends', 'POST', { player: 'Friend One', accountType: 'main' });
-  await call('/friends', 'POST', { player: 'friend one', accountType: 'ironman' });
-  let friends = (await call('/friends')).body;
-  assert.deepEqual(friends, [{ player: 'friend one', accountType: 'ironman' }], 'same name replaces');
-  friends = (await call('/friends/Friend%20One', 'DELETE')).body;
-  assert.deepEqual(friends, []);
-});
-
 test('Dink login and logout start and end a session', async () => {
   clock += 24 * HOUR;
   mine = { Attack: 61, Strength: 60, Zulrah: 52 };
@@ -195,12 +177,11 @@ test('rare drop odds from the wiki and kill count', async () => {
   assert.equal((await call('/bosses/Nothing%20Here/odds')).body.found, false);
 });
 
-test('search finds bosses, items and tasks', async () => {
+test('search finds bosses and tasks', async () => {
   await call('/tasks', 'POST', { title: 'Get a zulrah helm' });
   const hits = (await call('/search?q=zul')).body;
   const groups = Object.fromEntries(hits.map((h) => [h.group, h]));
   assert.equal(groups.Bosses.href, '#/bosses/Zulrah');
   assert.ok(groups.Tasks);
   assert.deepEqual((await call('/search?q=t')).body, [], 'too short');
-  assert.ok((await call('/search?q=tanz')).body.some((h) => h.group === 'Items' && h.title === 'Tanzanite fang'));
 });
