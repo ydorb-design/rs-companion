@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { openDb } from '../src/db.js';
 import { createUpstream } from '../src/upstream.js';
 import { createApp } from '../src/app.js';
+import { LOGOUT_DELAY } from '../src/routes/sessions.js';
 import { combatFromLevels, nextCombatNeeds } from '../public/js/combat.js';
 
 const HOUR = 3_600_000;
@@ -135,6 +136,9 @@ test('Dink login and logout start and end a session', async () => {
   let all = (await call('/sessions')).body;
   assert.equal(all.active, null);
   assert.equal(all.history[0].pending, true);
+  // The background sweep waits until the hiscores have had time to catch up.
+  await app.jobs.finishSessions({ minAge: LOGOUT_DELAY });
+  assert.equal((await call('/sessions')).body.history[0].pending, true);
   await app.jobs.finishSessions();
   all = (await call('/sessions')).body;
   const done = all.history[0];

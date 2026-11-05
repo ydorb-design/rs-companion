@@ -134,6 +134,15 @@ test('drop log and collection log', async () => {
   assert.equal(d.totals.biggest.itemName, 'Abyssal whip');
   assert.deepEqual(d.sources, ['Abyssal demons', 'Zulrah']);
 
+  // Totals count every drop, not just the 500 the list shows.
+  const key = 'iron brody';
+  const insert = db.prepare("INSERT INTO drops (player, item_name, qty, source, value_each, note, at) VALUES (?, 'Coins', 1, '', 10, '', ?)");
+  for (let i = 0; i < 600; i++) insert.run(key, clock - DAY);
+  const many = (await call('/drops')).body;
+  assert.equal(many.drops.length, 500);
+  assert.deepEqual([many.totals.count, many.totals.value], [603, 5_000_000 + 6000]);
+  db.prepare("DELETE FROM drops WHERE item_name = 'Coins'").run();
+
   const clog = (await call('/collection-log')).body;
   assert.equal(clog.items.find((i) => i.itemName === 'Tanzanite fang').obtainedAt != null, true);
   assert.equal(clog.hiscoresLogged, 95);

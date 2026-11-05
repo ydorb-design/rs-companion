@@ -85,7 +85,11 @@ const ROUTES = {
   settings: () => renderSettings({ reload: loadSettings }),
 };
 
+// Each navigation gets a number, so a slow page that fails after you've moved on can't replace the new one.
+let routeId = 0;
+
 async function route() {
+  const id = ++routeId;
   // The Iron guide used to live at #/guide.
   if (location.hash === '#/guide') return location.replace('#/guides/iron');
   const [name = 'overview', param] = location.hash.replace(/^#\/?/, '').split('/');
@@ -102,7 +106,8 @@ async function route() {
     if (!state.settings) await loadSettings();
     await render(param ? decodeURIComponent(param) : undefined);
   } catch (err) {
-    if (!(err instanceof AuthRequired)) view.innerHTML = emptyState('Something went wrong', esc(err.message));
+    if (id !== routeId || err instanceof AuthRequired) return;
+    view.innerHTML = emptyState('Something went wrong', esc(err.message));
   }
 }
 

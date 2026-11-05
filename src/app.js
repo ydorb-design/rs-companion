@@ -120,8 +120,8 @@ export function createApp({ db, upstream, now = () => Date.now(), password = '',
         }
       }
     },
-    finishSessions() {
-      return Promise.all(ctx.allAccounts().map((a) => sessions.finishPending(a)));
+    finishSessions(options) {
+      return Promise.all(ctx.allAccounts().map((a) => sessions.finishPending(a, options)));
     },
     checkTimers() {
       const due = timers.collectDue();

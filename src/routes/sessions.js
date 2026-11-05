@@ -136,8 +136,10 @@ export function sessionsRoutes(ctx, { refreshStats, killCount }) {
     return 'session ended';
   }
 
-  async function finishPending(account) {
-    const rows = db.prepare('SELECT * FROM sessions WHERE player = ? AND ended_at IS NOT NULL AND end_data IS NULL').all(account.key);
+  // minAge skips sessions that ended too recently for the hiscores to have caught up.
+  async function finishPending(account, { minAge = 0 } = {}) {
+    const rows = db.prepare('SELECT * FROM sessions WHERE player = ? AND ended_at IS NOT NULL AND ended_at <= ? AND end_data IS NULL')
+      .all(account.key, now() - minAge);
     if (!rows.length) return 0;
     try {
       await refreshStats(account);

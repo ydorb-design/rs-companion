@@ -17,6 +17,9 @@ self.addEventListener('fetch', (e) => {
         }
         return res;
       })
-      .catch(() => caches.match(e.request)),
+      // Offline: the cached copy, or the app shell for a page load, or a plain network error.
+      .catch(async () => (await caches.match(e.request))
+        || (e.request.mode === 'navigate' && (await caches.match(self.registration.scope, { ignoreSearch: true })))
+        || Response.error()),
   );
 });

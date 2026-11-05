@@ -1,4 +1,4 @@
-import { EVENT_TYPES, api, emptyState, esc, needsAccount, segmented, state, view } from '../lib.js';
+import { EVENT_TYPES, api, emptyState, esc, filterControl, needsAccount, state, view } from '../lib.js';
 
 const ui = { type: '' };
 const FILTERS = [['', 'All'], ['level', 'Levels'], ['kc', 'Kill counts'], ['quest', 'Quests'], ['diary', 'Diaries'], ['drop', 'Drops'], ['slayer', 'Slayer'], ['clog', 'Collection log'], ['pb', 'Personal bests'], ['ca', 'Combat tasks'], ['clue', 'Clues'], ['pet', 'Pets'], ['death', 'Deaths']];
@@ -30,7 +30,7 @@ export async function renderActivity() {
       </div>
     </div>
     <div class="stack">
-      ${segmented('type', FILTERS, ui.type, 'Filter activity')}
+      <div class="row">${filterControl('type', FILTERS, ui.type, 'Filter activity')}</div>
       ${groups.length ? groups.map((g) => `
         <section class="card">
           <div class="card-head"><h2>${esc(g.label)}</h2></div>
@@ -43,8 +43,8 @@ export async function renderActivity() {
         : emptyState('Nothing yet', 'Activity builds up as the app refreshes your stats and syncs quests, and as you log drops and Slayer tasks.')}
     </div></div>`;
 
-  view.querySelectorAll('[data-type]').forEach((b) => b.addEventListener('click', () => {
-    ui.type = b.dataset.type;
+  view.querySelector('[data-filter="type"]')?.addEventListener('change', (e) => {
+    ui.type = e.target.value;
     renderActivity();
-  }));
+  });
 }

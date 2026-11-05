@@ -74,7 +74,8 @@ export function goalsRoutes(ctx) {
   });
 
   r.delete('/goals/:id', (req, res) => {
-    db.prepare('DELETE FROM goals WHERE id = ?').run(Number(req.params.id));
+    const { key } = ctx.requireAccount();
+    db.prepare('DELETE FROM goals WHERE id = ? AND player = ?').run(Number(req.params.id), key);
     res.json({ ok: true });
   });
 

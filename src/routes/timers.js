@@ -67,7 +67,8 @@ export function timersRoutes(ctx) {
 
   // Starts the same timer again from now.
   r.post('/timers/:id/restart', (req, res) => {
-    const row = db.prepare('SELECT * FROM timers WHERE id = ?').get(Number(req.params.id));
+    const { key } = ctx.requireAccount();
+    const row = db.prepare('SELECT * FROM timers WHERE id = ? AND player = ?').get(Number(req.params.id), key);
     if (!row) return res.status(404).json({ error: 'Timer not found.' });
     db.prepare('UPDATE timers SET started_at = ?, ends_at = ?, notified = 0 WHERE id = ?')
       .run(now(), endsAt(row.preset, row.duration_ms), row.id);
@@ -75,7 +76,8 @@ export function timersRoutes(ctx) {
   });
 
   r.delete('/timers/:id', (req, res) => {
-    db.prepare('DELETE FROM timers WHERE id = ?').run(Number(req.params.id));
+    const { key } = ctx.requireAccount();
+    db.prepare('DELETE FROM timers WHERE id = ? AND player = ?').run(Number(req.params.id), key);
     res.json({ ok: true });
   });
 

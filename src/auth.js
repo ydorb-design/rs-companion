@@ -6,7 +6,14 @@ const COOKIE = 'rsc_session';
 const MAX_AGE_S = 90 * 24 * 60 * 60;
 
 function parseCookies(header = '') {
-  return Object.fromEntries(header.split(';').map((c) => c.trim().split('=')).filter(([k]) => k).map(([k, ...v]) => [k, decodeURIComponent(v.join('='))]));
+  const decode = (v) => {
+    try {
+      return decodeURIComponent(v);
+    } catch {
+      return v; // a malformed cookie from another app on the same host shouldn't break sign-in
+    }
+  };
+  return Object.fromEntries(header.split(';').map((c) => c.trim().split('=')).filter(([k]) => k).map(([k, ...v]) => [k, decode(v.join('='))]));
 }
 
 export function createAuth({ password, getSecret }) {
@@ -24,16 +31,26 @@ export function createAuth({ password, getSecret }) {
   const router = Router();
   router.get('/auth', (req, res) => res.json({ required: enabled, authenticated: isAuthed(req) }));
 
+  // Slow down guessing: attempts are checked one at a time, at most one failed attempt per second.
   let lastFail = 0;
+  let queue = Promise.resolve();
+  function checkPassword(given) {
+    const attempt = queue.then(async () => {
+      const wait = lastFail + 1000 - Date.now();
+      if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+      const a = crypto.createHash('sha256').update(given).digest();
+      const b = crypto.createHash('sha256').update(password).digest();
+      const ok = crypto.timingSafeEqual(a, b);
+      if (!ok) lastFail = Date.now();
+      return ok;
+    });
+    queue = attempt.catch(() => {});
+    return attempt;
+  }
+
   router.post('/auth/login', async (req, res) => {
     if (!enabled) return res.json({ ok: true });
-    // Slow down guessing: at most one failed attempt per second.
-    const wait = lastFail + 1000 - Date.now();
-    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
-    const given = crypto.createHash('sha256').update(String(req.body.password || '')).digest();
-    const want = crypto.createHash('sha256').update(password).digest();
-    if (!crypto.timingSafeEqual(given, want)) {
-      lastFail = Date.now();
+    if (!(await checkPassword(String(req.body?.password || '')))) {
       return res.status(401).json({ error: 'Wrong password.' });
     }
     const secure = req.secure ? '; Secure' : '';
