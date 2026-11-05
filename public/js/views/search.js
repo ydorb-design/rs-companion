@@ -6,9 +6,9 @@ const PAGES = [
   ['Overview', '#/overview', 'stats levels xp home'], ['Activity', '#/activity', 'feed timeline'],
   ['Sessions', '#/sessions', 'play session xp per hour'], ['Goals', '#/goals', 'target max cape'],
   ['Quests & diaries', '#/quests', 'quest diary achievement music combat tasks wikisync'], ['Guides', '#/guides', 'iron guide route'],
-  ['Compare', '#/compare', 'friends player versus'], ['Bossing', '#/bossing', 'kill count kc clues minigames'],
+  ['Bossing', '#/bossing', 'kill count kc clues minigames'],
   ['Boss notes', '#/bosses', 'gear inventory strategy'], ['Slayer', '#/slayer', 'task points'],
-  ['Drops', '#/drops', 'loot gp'], ['Collection log', '#/collection', 'clog dry'], ['Prices', '#/prices', 'grand exchange ge alch'],
+  ['Drops', '#/drops', 'loot gp'], ['Collection log', '#/collection', 'clog dry'],
   ['Timers & dailies', '#/timers', 'herb birdhouse farming checklist weekly'], ['Supplies', '#/supplies', 'stock potions'],
   ['Tasks', '#/tasks', 'to do board'], ['Calculators', '#/calc', 'combat level xp calculator'], ['Settings', '#/settings', 'accounts alerts dink backup theme'],
 ];

@@ -13,7 +13,6 @@ A self-hosted Old School RuneScape companion you run in Docker and open in a bro
   - **Quest order**: the OSRS Wiki's ironman quest route, loaded live from the wiki, with its training steps and notes
   - **Diary route**: every diary tier with its rewards, and whether you have the levels and quests for it
   - **Skill training**, **bossing ladder**, **Slayer unlocks**, **money making** and **farming runs**
-- **Prices**: live Grand Exchange prices, high alch values, alch profit and a watchlist
 - **Alerts**: Discord or ntfy messages when a timer finishes, you level up, or you complete a goal
 - **Activity feed**: level-ups, kill count milestones, quests, diaries, drops and Slayer tasks in one timeline
 - **What's next** on the Overview: ready timers, unfinished dailies, your Slayer task, quests you can start and your closest goals
@@ -25,7 +24,6 @@ A self-hosted Old School RuneScape companion you run in Docker and open in a bro
 - **Search** across quests, bosses, skills, guides, items, tasks and your lists (press `/` on desktop)
 - **Drops and collection log**: log drops with their GE value; keep a list of collection log items you're chasing, ticked off automatically when you log the drop; see how dry you are on each one, from the wiki's drop rate and your kill count
 - **Sessions**: start a session when you log in and end it when you stop, to see the XP and XP per hour, kill counts and loot from that sitting, with a history of past sessions. With Dink, sessions start and end on their own when you log in and out
-- **Compare**: line your skills, kill counts and clues up against any player on the hiscores, and save friends to compare with in one tap
 - **Calculators**: combat level, with how many levels you need in each stat for the next one, and XP to a target level with actions and hours left
 - **Daily and weekly checklist**: your own recurring jobs, reset at the game's daily (00:00 UTC) and weekly (Wednesday 00:00 UTC) reset
 - **Multiple accounts**, optional **password login**, **backup and restore**, **light and dark themes**, and it can be **installed to your phone's home screen**

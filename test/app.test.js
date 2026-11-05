@@ -298,16 +298,11 @@ test('notification test endpoint', async () => {
   assert.equal((await call('/notifications/test', 'POST')).status, 400);
 });
 
-test('price search, alch profit and watchlist', async () => {
+test('item search with alch profit', async () => {
   const results = (await call('/prices/search?q=rune')).body;
   assert.equal(results[0].name, 'Rune 2h sword');
   const plate = results.find((r) => r.id === 1127);
   assert.equal(plate.alchProfit, 39000 - 38500 - 100);
-  await call('/prices/watchlist', 'POST', { id: 1127 });
-  await call('/prices/watchlist', 'POST', { id: 1127 });
-  assert.equal((await call('/prices/watchlist')).body.length, 1);
-  await call('/prices/watchlist/1127', 'DELETE');
-  assert.equal((await call('/prices/watchlist')).body.length, 0);
 });
 
 test('tasks board and templates', async () => {

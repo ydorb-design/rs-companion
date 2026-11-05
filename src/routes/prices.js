@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import { BadRequest } from '../context.js';
 import { NATURE_RUNE_ID } from '../upstream.js';
 
+// Item search for the item pickers on Drops, Collection log and Supplies.
 export function pricesRoutes(ctx) {
   const r = Router();
-  const { db, upstream, now } = ctx;
+  const { upstream } = ctx;
 
   async function priceRows(items) {
     const latest = await upstream.latestPrices();
@@ -36,25 +36,6 @@ export function pricesRoutes(ctx) {
       .sort((a, b) => rank(a.name.toLowerCase()) - rank(b.name.toLowerCase()) || a.name.localeCompare(b.name))
       .slice(0, 30);
     res.json(await priceRows(matches));
-  });
-
-  r.get('/prices/watchlist', async (req, res) => {
-    const ids = db.prepare('SELECT item_id FROM watchlist ORDER BY added_at').all().map((row) => row.item_id);
-    if (!ids.length) return res.json([]);
-    const byId = new Map((await upstream.itemMapping()).map((i) => [i.id, i]));
-    res.json(await priceRows(ids.map((id) => byId.get(id)).filter(Boolean)));
-  });
-
-  r.post('/prices/watchlist', (req, res) => {
-    const id = Number(req.body.id);
-    if (!Number.isInteger(id)) throw new BadRequest('Missing item id.');
-    db.prepare('INSERT OR IGNORE INTO watchlist (item_id, added_at) VALUES (?, ?)').run(id, now());
-    res.json({ ok: true });
-  });
-
-  r.delete('/prices/watchlist/:id', (req, res) => {
-    db.prepare('DELETE FROM watchlist WHERE item_id = ?').run(Number(req.params.id));
-    res.json({ ok: true });
   });
 
   return r;
