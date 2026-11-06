@@ -151,6 +151,7 @@ test('settings and account validation', async () => {
   assert.equal((await call('/accounts', 'POST', { player: 'waytoolongname', accountType: 'main' })).status, 400);
   assert.equal((await call('/settings', 'PUT', { discordWebhook: 'not a url' })).status, 400);
   assert.equal((await call('/settings', 'PUT', { refreshHours: 500 })).status, 400);
+  assert.equal((await call('/settings', 'PUT', { refreshHours: 0.01 })).status, 400, 'too often for the hiscores');
   const r = await call('/settings', 'PUT', { refreshHours: 3, discordWebhook: 'https://discord.test/hook' });
   assert.equal(r.body.refreshHours, 3);
   assert.equal(r.body.secret, undefined);

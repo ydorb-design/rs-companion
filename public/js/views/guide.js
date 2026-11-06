@@ -1,5 +1,5 @@
 import {
-  api, ago, busy, esc, needsAccount, segmented, state, toast, view, wikiUrl,
+  api, ago, busy, esc, filterControl, needsAccount, state, toast, view, wikiUrl,
 } from '../lib.js';
 
 // Filters per guide, kept while you move between guides.
@@ -9,13 +9,6 @@ const STATUS_LABEL = { done: 'Done', ready: 'Ready', locked: 'Not yet', todo: 'T
 
 const pct = (n, total) => (total ? ((n / total) * 100).toFixed(1) : 0);
 const progressBar = (done, total) => `<div class="bar ${total && done === total ? 'done' : ''}" style="margin-top:8px"><span style="width:${pct(done, total)}%"></span></div>`;
-
-// Segmented buttons for a few options, a select for many.
-function filterControl(name, options, current, label) {
-  if (options.length <= 6) return segmented(name, options, current, label);
-  return `<label class="filter-select"><span class="visually-hidden">${esc(label)}</span>
-    <select data-filter="${name}">${options.map(([v, t]) => `<option value="${esc(v)}" ${v === current ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select></label>`;
-}
 
 // Route steps are named after what ticks them off, so they only list requirements.
 const checksList = (s, { requiresOnly = false } = {}) => {

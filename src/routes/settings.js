@@ -36,7 +36,8 @@ export function settingsRoutes(ctx, { onChange }) {
     const next = {};
     if (b.refreshHours !== undefined) {
       const hours = Number(b.refreshHours);
-      if (!(hours >= 0 && hours <= 168)) throw new BadRequest('Refresh interval must be 0 to 168 hours.');
+      // Under half an hour would hit the hiscores far more often than they change.
+      if (!(hours === 0 || (hours >= 0.5 && hours <= 168))) throw new BadRequest('Refresh interval must be 0 (off) or 0.5 to 168 hours.');
       next.refreshHours = hours;
     }
     if (b.discordWebhook !== undefined) next.discordWebhook = checkUrl(b.discordWebhook, 'Discord webhook');

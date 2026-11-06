@@ -547,6 +547,9 @@ label.calc-skill { display: grid; grid-template-columns: 20px 1fr; align-items: 
   .kpi-value { font-size: var(--text-xl); }
 }
 @media (max-width: 520px) {
+  /* Forms with an item search: the search gets its own row, the smaller fields pair up below it. */
+  .form-grid:has(.picker) { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .form-grid > .field:has(.picker) { grid-column: 1 / -1; }
   .session summary { grid-template-columns: minmax(0, 1fr) auto; }
   .session-what { grid-column: 1 / -1; grid-row: 2; }
 }

@@ -56,13 +56,16 @@ export function dropsRoutes(ctx) {
         valueNow: nowEach != null ? nowEach * d.qty : null,
       };
     });
-    const sum = (list) => list.reduce((n, d) => n + (d.valueThen || 0), 0);
-    const monthAgo = now() - 30 * DAY;
-    const biggest = drops.reduce((best, d) => ((d.valueThen || 0) > (best?.valueThen || 0) ? d : best), null);
+    // Totals cover every drop, not just the 500 listed.
+    const value = 'COALESCE(value_each, 0) * qty';
+    const totals = db.prepare(`SELECT COUNT(*) AS count, COALESCE(SUM(${value}), 0) AS value,
+      COALESCE(SUM(CASE WHEN at >= ? THEN ${value} ELSE 0 END), 0) AS month FROM drops WHERE player = ?`).get(now() - 30 * DAY, key);
+    const topRow = db.prepare(`SELECT * FROM drops WHERE player = ? AND ${value} > 0 ORDER BY ${value} DESC, at DESC LIMIT 1`).get(key);
+    const biggest = topRow ? { id: topRow.id, itemName: topRow.item_name, icon: topRow.icon, qty: topRow.qty, valueThen: topRow.value_each * topRow.qty } : null;
     const sources = db.prepare("SELECT DISTINCT source FROM drops WHERE player = ? AND source != '' ORDER BY source").all(key).map((x) => x.source);
     res.json({
       drops,
-      totals: { count: drops.length, value: sum(drops), month: sum(drops.filter((d) => d.at >= monthAgo)), biggest },
+      totals: { count: totals.count, value: totals.value, month: totals.month, biggest },
       sources,
     });
   });

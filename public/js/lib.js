@@ -106,6 +106,13 @@ export function segmented(name, options, current, label) {
   </div>`;
 }
 
+// Segmented buttons for a few options, a select for many (which would otherwise scroll off a phone screen).
+export function filterControl(name, options, current, label) {
+  if (options.length <= 6) return segmented(name, options, current, label);
+  return `<label class="filter-select"><span class="visually-hidden">${esc(label)}</span>
+    <select data-filter="${name}">${options.map(([v, t]) => `<option value="${esc(v)}" ${v === current ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select></label>`;
+}
+
 // SVG line chart. points: [{t, v}]. Returns markup, or a message when there isn't enough data.
 export function lineChart(points, { label, empty = 'The chart fills in as the app takes snapshots.' } = {}) {
   if (points.length < 2) return `<p class="muted small">${esc(empty)}</p>`;

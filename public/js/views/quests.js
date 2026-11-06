@@ -154,8 +154,8 @@ export async function renderQuests(param) {
       ui.q = search.value;
       renderQuests().then(() => {
         const s = document.getElementById('quest-search');
-        s.focus();
-        s.setSelectionRange(s.value.length, s.value.length);
+        s?.focus();
+        s?.setSelectionRange(s.value.length, s.value.length);
       });
     }, 200);
   });

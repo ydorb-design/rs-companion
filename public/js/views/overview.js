@@ -82,7 +82,9 @@ export async function renderOverview() {
   renderNext();
   const { points } = await api('/stats/history?skill=Overall&days=90');
   const last = points.at(-1);
-  document.getElementById('chart').innerHTML = lineChart(points.map((p) => ({ t: p.t, v: p.xp })), { label: 'Total XP' })
+  const chart = document.getElementById('chart');
+  if (!chart) return; // moved to another page while it loaded
+  chart.innerHTML = lineChart(points.map((p) => ({ t: p.t, v: p.xp })), { label: 'Total XP' })
     + (points.length > 1 ? `<p class="muted small">${signed(last.xp - points[0].xp)} XP over the last 90 days.</p>` : '');
 }
 
