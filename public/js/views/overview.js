@@ -13,10 +13,11 @@ export async function renderOverview() {
     <div class="page-head">
       <div>
         <h1>${esc(account.player)}</h1>
-        <p class="muted small">${stats.latest ? `Hiscores updated ${ago(stats.latest.takenAt)}` : 'No data yet'}</p>
+        <p class="muted small">${stats.latest ? checkedLine(stats) : 'No data yet'}</p>
       </div>
       <button class="btn btn-primary" id="refresh">Refresh stats</button>
-    </div>`;
+    </div>
+    ${stats.frozenBoard ? `<div class="notice" role="status" style="margin-bottom:16px">Your ${esc(stats.frozenBoard)} hiscores have stopped updating, which happens when an account loses that status. Showing the main hiscores instead. To fix it for good, change the account type in <a href="#/settings">Settings</a>.</div>` : ''}`;
 
   if (!stats.latest) {
     view.innerHTML = `<div>${head}${emptyState('No stats yet', 'Pull your levels from the official hiscores to get started.')}</div>`;
@@ -88,15 +89,23 @@ export async function renderOverview() {
     + (points.length > 1 ? `<p class="muted small">${signed(last.xp - points[0].xp)} XP over the last 90 days.</p>` : '');
 }
 
+// "Checked just now" alone reads as stale when nothing has changed, so say when the stats last moved too.
+function checkedLine({ latest, checkedAt }) {
+  const checked = `Hiscores checked ${ago(checkedAt)}`;
+  return checkedAt - latest.takenAt > 60 * 1000 ? `${checked}, last change ${ago(latest.takenAt)}` : checked;
+}
+
 export function bindRefresh(rerender) {
   const btn = document.getElementById('refresh');
   btn?.addEventListener('click', async () => {
-    let levelUps = [];
+    let levelUps = [], changed = true;
     const ok = await busy(btn, async () => {
-      ({ levelUps } = await api('/stats/refresh', { method: 'POST' }));
+      ({ levelUps, changed } = await api('/stats/refresh', { method: 'POST' }));
     });
     if (!ok) return;
-    toast(levelUps.length ? `Level up: ${levelUps.map((l) => `${l.skill} ${l.to}`).join(', ')}` : 'Stats updated');
+    toast(levelUps.length ? `Level up: ${levelUps.map((l) => `${l.skill} ${l.to}`).join(', ')}`
+      : changed ? 'Stats updated'
+        : 'No changes on the hiscores yet. They can take a few minutes to catch up after you log out.');
     rerender();
   });
 }

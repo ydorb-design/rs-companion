@@ -18,7 +18,9 @@ export function statsRoutes(ctx, { onRefreshed } = {}) {
 
   // Pulls hiscores for one account and stores a snapshot. Returns level-ups since the last one.
   async function refreshStats(account = ctx.requireAccount()) {
-    const data = await ctx.upstream.hiscores(account.player, account.accountType);
+    const { frozenBoard = null, ...data } = await ctx.upstream.hiscores(account.player, account.accountType);
+    // A snapshot is only stored when something changed, so keep when the hiscores were last checked too.
+    ctx.saveSettings({ [`lastChecked:${account.key}`]: { at: now(), frozenBoard } });
     ctx.ensureBackfill(account.key);
     const last = ctx.latestSnapshot(account.key);
     const changed = !last || JSON.stringify([last.skills, last.activities]) !== JSON.stringify([data.skills, data.activities]);
@@ -34,7 +36,7 @@ export function statsRoutes(ctx, { onRefreshed } = {}) {
         if (s.name !== 'Overall' && before && s.level > before.level) levelUps.push({ skill: s.name, from: before.level, to: s.level });
       }
     }
-    const result = { latest: ctx.latestSnapshot(account.key), previous: last, levelUps };
+    const result = { latest: ctx.latestSnapshot(account.key), previous: last, levelUps, changed, frozenBoard };
     onRefreshed?.(account, result);
     return result;
   }
@@ -64,12 +66,17 @@ export function statsRoutes(ctx, { onRefreshed } = {}) {
         gains[name] = base ? diff(latest.skills, base.skills, 'xp').map((g) => ({ name: g.name, xp: g.gained, levels: g.levels })) : null;
       }
     }
-    res.json({ account, latest, gains, combatLevel: latest ? combatLevel(latest.skills) : null });
+    const checked = account ? ctx.getSettings()[`lastChecked:${account.key}`] : null;
+    res.json({
+      account, latest, gains, combatLevel: latest ? combatLevel(latest.skills) : null,
+      checkedAt: checked?.at ?? latest?.takenAt ?? null,
+      frozenBoard: checked?.frozenBoard ?? null,
+    });
   });
 
   r.post('/stats/refresh', async (req, res) => {
     const result = await refreshStats();
-    res.json({ ok: true, levelUps: result.levelUps });
+    res.json({ ok: true, levelUps: result.levelUps, changed: result.changed, frozenBoard: result.frozenBoard });
   });
 
   // Snapshot history for one skill or activity.
@@ -119,7 +126,8 @@ export function statsRoutes(ctx, { onRefreshed } = {}) {
       gains[name] = base ? Object.fromEntries(diff(latest.activities, base.activities, 'score').map((g) => [g.name, g.gained])) : null;
     }
     const activities = latest.activities.map((a) => ({ ...a, group: activityGroup(a.name) }));
-    res.json({ takenAt: latest.takenAt, activities, gains });
+    const checkedAt = ctx.getSettings()[`lastChecked:${key}`]?.at ?? latest.takenAt;
+    res.json({ takenAt: latest.takenAt, checkedAt, activities, gains });
   });
 
   return { router: r, refreshStats };

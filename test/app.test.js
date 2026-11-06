@@ -59,6 +59,9 @@ async function fakeFetch(url, opts = {}) {
   }
   if (url.includes('hiscore_oldschool_ironman') && url.includes('Iron%20Brody')) return json(hiscoresFixture(xpBoost, kills));
   if (url.includes('hiscore_oldschool/') && url.includes('Main%20Alt')) return json(hiscoresFixture(0));
+  // A hardcore that died: the hardcore board is frozen behind the main one.
+  if (url.includes('hiscore_oldschool_hardcore_ironman') && url.includes('Dead%20Hc')) return json(hiscoresFixture(0));
+  if (url.includes('hiscore_oldschool/') && url.includes('Dead%20Hc')) return json(hiscoresFixture(20_000));
   if (url.includes('hiscore')) return json({}, 404);
   if (url.includes('sync.runescape.wiki')) return json(WIKISYNC);
   if (url.includes('api.php')) {
@@ -193,6 +196,25 @@ test('stats refresh, gains, history, rates and level-up alerts', async () => {
 
   const rates = (await call('/stats/rates')).body;
   assert.equal(Math.round(rates.week.Attack), 50_000); // spread over a minimum of one day
+});
+
+test('refresh with no changes still updates the checked time', async () => {
+  const before = (await call('/stats')).body;
+  clock += 10 * 60 * 1000;
+  const r = await call('/stats/refresh', 'POST');
+  assert.equal(r.body.changed, false);
+  const after = (await call('/stats')).body;
+  assert.equal(after.latest.takenAt, before.latest.takenAt, 'no new snapshot');
+  assert.equal(after.checkedAt, clock);
+  assert.equal(after.frozenBoard, null);
+});
+
+test('frozen ironman board falls back to the main hiscores', async () => {
+  const data = await createUpstream({ fetch: fakeFetch }).hiscores('Dead Hc', 'hardcore');
+  assert.equal(data.frozenBoard, 'Hardcore ironman');
+  assert.equal(data.skills.find((s) => s.name === 'Attack').xp, 120_000);
+  const iron = await createUpstream({ fetch: fakeFetch }).hiscores('Iron Brody', 'ironman');
+  assert.equal(iron.frozenBoard, undefined, 'main board missing is ignored');
 });
 
 test('activities: groups and gains', async () => {
