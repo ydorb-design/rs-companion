@@ -12,7 +12,7 @@ export async function renderBossing() {
     <div class="page-head">
       <div>
         <h1>Bossing &amp; clues</h1>
-        <p class="muted small">${data.takenAt ? `From the hiscores, updated ${ago(data.takenAt)}. Kill counts only appear once you're ranked for that boss.` : 'No data yet'}</p>
+        <p class="muted small">${data.takenAt ? `From the hiscores, checked ${ago(data.checkedAt)}${data.checkedAt - data.takenAt > 60 * 1000 ? `, last change ${ago(data.takenAt)}` : ''}. Kill counts only appear once you're ranked for that boss.` : 'No data yet'}</p>
       </div>
       <button class="btn btn-primary" id="refresh">Refresh stats</button>
     </div>`;

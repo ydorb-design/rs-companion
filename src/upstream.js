@@ -97,13 +97,23 @@ export function createUpstream({ fetch = globalThis.fetch, now = () => Date.now(
   }
 
   return {
+    // Returns { skills, activities }, plus frozenBoard when the account's own board has stopped updating.
     async hiscores(player, accountType = 'main') {
-      const board = (ACCOUNT_TYPES[accountType] || ACCOUNT_TYPES.main).hiscore;
-      const url = `https://secure.runescape.com/m=${board}/index_lite.json?player=${encodeURIComponent(player)}`;
-      const json = await getJson(url, {
-        notFound: `"${player}" isn't on the ${ACCOUNT_TYPES[accountType]?.label ?? 'main'} hiscores. Check the name and account type.`,
-      });
-      return parseHiscores(json);
+      const type = ACCOUNT_TYPES[accountType] ? accountType : 'main';
+      const boardUrl = (board) => `https://secure.runescape.com/m=${board}/index_lite.json?player=${encodeURIComponent(player)}`;
+      const own = getJson(boardUrl(ACCOUNT_TYPES[type].hiscore), {
+        notFound: `"${player}" isn't on the ${ACCOUNT_TYPES[type].label} hiscores. Check the name and account type.`,
+      }).then(parseHiscores);
+      if (ACCOUNT_TYPES[type].hiscore === ACCOUNT_TYPES.main.hiscore) return own;
+      // An ironman board stops updating when the account loses that status (a hardcore death, or de-ironing),
+      // but the main board always keeps going. If it's ahead, use it.
+      const main = getJson(boardUrl(ACCOUNT_TYPES.main.hiscore)).then(parseHiscores).catch(() => null);
+      const [data, mainData] = await Promise.all([own, main]);
+      const overallXp = (d) => d?.skills.find((s) => s.name === 'Overall')?.xp ?? 0;
+      if (mainData && overallXp(mainData) > overallXp(data)) {
+        return { ...mainData, frozenBoard: ACCOUNT_TYPES[type].label };
+      }
+      return data;
     },
 
     async wikiSync(player) {
